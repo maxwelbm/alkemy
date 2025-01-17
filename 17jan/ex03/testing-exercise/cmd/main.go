@@ -12,7 +12,7 @@ func main() {
 	// app
 	// - config
 	fmt.Println("http://localhost:8080")
-	app := application.NewApplicationDefault(":8080")
+	app := application.NewApplicationDefault(":8080", true)
 	// - tear down
 	// defer app.TearDown()
 	// - set up
