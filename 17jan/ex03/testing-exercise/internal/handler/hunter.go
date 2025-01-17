@@ -70,10 +70,18 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
+		var hunterConfig RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
 
 		// process
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 		// response
+		response.Text(w, http.StatusOK, "O pescador está configurado corretamente")
 	}
 }
 
@@ -83,7 +91,13 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// request
 
 		// process
+		duration, err := h.ht.Hunt(h.pr)
 
 		// response
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		response.JSON(w, http.StatusOK, duration)
 	}
 }
