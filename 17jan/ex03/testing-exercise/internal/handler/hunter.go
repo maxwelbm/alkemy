@@ -7,6 +7,7 @@ import (
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
+	"testdoubles/platform/web/request"
 	"testdoubles/platform/web/response"
 )
 
@@ -70,10 +71,21 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
+		var requestBody RequestBodyConfigPrey
+		err := request.JSON(r, &requestBody)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
 
 		// process
+		h.ht.Configure(requestBody.Speed, requestBody.Position)
 
 		// response
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "prey configured",
+		})
 	}
 }
 
@@ -83,7 +95,19 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// request
 
 		// process
+		duration, err := h.ht.Hunt(h.pr)
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		success := err == nil
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message":  "hunt done",
+			"success":  success,
+			"duration": duration,
+		})
 	}
 }
