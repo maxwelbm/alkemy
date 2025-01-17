@@ -69,21 +69,30 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		var cfgHunter RequestBodyConfigHunter
 
-		// process
+		err := json.NewDecoder(r.Body).Decode(&cfgHunter)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "invalid request")
+		}
 
-		// response
+		h.ht.Configure(cfgHunter.Speed, cfgHunter.Position)
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "hunter configured successfully",
+		})
 	}
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		timeTook, err := h.ht.Hunt(h.pr)
 
-		// process
-
-		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message":   "hunt executed successfully",
+			"success":   err == nil,
+			"time_took": timeTook,
+		})
 	}
 }
