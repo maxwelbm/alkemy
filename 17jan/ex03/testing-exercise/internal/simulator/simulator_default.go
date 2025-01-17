@@ -1,6 +1,9 @@
 package simulator
 
-import "testdoubles/internal/positioner"
+import (
+	"log"
+	"testdoubles/internal/positioner"
+)
 
 // ConfigCatchSimulatorDefault is the configuration for CatchSimulatorDefault
 type ConfigCatchSimulatorDefault struct {
@@ -32,8 +35,8 @@ func (c *CatchSimulatorDefault) CanCatch(hunter, prey *Subject) (duration float6
 
 	// calculate time to catch the prey (in seconds)
 	timeToCatch := distance / (hunter.Speed - prey.Speed)
-
 	// check if hunter can catch the prey
+	log.Println(timeToCatch, c.maxTimeToCatch)
 	ok = timeToCatch >= 0 && timeToCatch <= c.maxTimeToCatch
 	if !ok {
 		return

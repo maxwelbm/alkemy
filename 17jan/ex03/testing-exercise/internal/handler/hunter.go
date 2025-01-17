@@ -54,7 +54,7 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -77,7 +77,7 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 			return
 		}
 		// process
-
+		h.ht.Configure(hunterJSON.Speed, hunterJSON.Position)
 		// response
 		response.JSON(w, http.StatusOK, "O caçador esta configurado corretamente")
 	}
@@ -92,12 +92,12 @@ type RequestBodyConfigHunt struct {
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
-
 		// process
 		_, err := h.ht.Hunt(h.pr)
 
 		// response
 		if err != nil {
+			log.Println(err)
 			response.Error(w, http.StatusInternalServerError, err.Error())
 		}
 		response.JSON(w, http.StatusOK, "A caçada foi concluída com sucesso")

@@ -3,6 +3,10 @@
 tests:
 	go test -v ./...
 
+.PHONY: test-special
+test-special:
+	go test ./... -tags special
+
 # This command will generate a coverage report for the project
 .PHONY: coverage
 coverage:
