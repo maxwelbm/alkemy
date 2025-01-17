@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -54,7 +55,7 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -69,21 +70,36 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("call ConfigureHunter")
+
 		// request
+		var hunterConfig RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
 
 		// process
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 		// response
+		response.Text(w, http.StatusOK, "O hunter está configurado corretamente")
 	}
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
 		// process
+		duration, err := h.ht.Hunt(h.pr)
+
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
 		// response
+		response.Text(w, http.StatusOK, "A presa foi caçada em "+fmt.Sprintf("%f", duration))
 	}
 }
