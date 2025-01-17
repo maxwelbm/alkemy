@@ -70,11 +70,22 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
-
+		var hunterJSON RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&hunterJSON)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, err.Error())
+			return
+		}
 		// process
 
 		// response
+		response.JSON(w, http.StatusOK, "O caçador esta configurado corretamente")
 	}
+}
+
+type RequestBodyConfigHunt struct {
+	Prey   RequestBodyConfigPrey   `json:"prey"`
+	Hunter RequestBodyConfigHunter `json:"hunter"`
 }
 
 // Hunt hunts the prey.
@@ -83,7 +94,12 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// request
 
 		// process
+		_, err := h.ht.Hunt(h.pr)
 
 		// response
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, err.Error())
+		}
+		response.JSON(w, http.StatusOK, "A caçada foi concluída com sucesso")
 	}
 }
