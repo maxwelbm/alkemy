@@ -34,7 +34,7 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 	require.Equal(t, expectedCode, res.Result().StatusCode)
 }
 
-func TestHandler_ConfigureHunter(t *testing.T) {
+func TestHandler_ConfigureHunter_BadRequest(t *testing.T) {
 	shark := hunter.WhiteShark{}
 	tuna := prey.Tuna{}
 	hd := NewHunter(&shark, &tuna)
@@ -43,7 +43,30 @@ func TestHandler_ConfigureHunter(t *testing.T) {
 	expectedCode := http.StatusBadRequest
 
 	req := newRequest("POST", "/", body)
-	res := executeRequest(hd.ConfigureHunter(), req)
+	res := executeRequest(hd.ConfigureHunter, req)
+
+	require.Equal(t, expectedCode, res.Result().StatusCode)
+}
+
+func TestHandler_ConfigureHunter(t *testing.T) {
+	shark := hunter.WhiteShark{}
+	tuna := prey.Tuna{}
+	hd := NewHunter(&shark, &tuna)
+	f := hd.ConfigureHunter
+	body := RequestBodyConfigHunter{
+		Speed: 35.0,
+		Position: &positioner.Position{
+			X: 15,
+			Y: 30,
+			Z: 45,
+		},
+	}
+	expectedCode := http.StatusOK
+
+	req := newRequest("POST", "/", body)
+	res := httptest.NewRecorder()
+
+	f(res, req)
 
 	require.Equal(t, expectedCode, res.Result().StatusCode)
 }
@@ -66,7 +89,7 @@ func TestHandler_Hunt(t *testing.T) {
 			expectedBody: `
 		{
 			"duration": 10,
-			"message": "hunt done",
+			"message": "A caça foi concluída.",
 			"success": true
 		}
 	`,
@@ -92,7 +115,7 @@ func TestHandler_Hunt(t *testing.T) {
 			hd := NewHunter(shark, nil)
 
 			req := httptest.NewRequest("POST", "/", nil)
-			res := executeRequest(hd.Hunt(), req)
+			res := executeRequest(hd.Hunt, req)
 
 			require.Equal(t, tt.expectedCode, res.Result().StatusCode)
 			require.JSONEq(t, tt.expectedBody, res.Body.String())

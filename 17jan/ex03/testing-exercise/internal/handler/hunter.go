@@ -7,7 +7,6 @@ import (
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
-	"testdoubles/platform/web/request"
 	"testdoubles/platform/web/response"
 )
 
@@ -68,46 +67,41 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-		var requestBody RequestBodyConfigPrey
-		err := request.JSON(r, &requestBody)
-		if err != nil {
-			response.Error(w, http.StatusBadRequest, "invalid request body")
-			return
-		}
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	// request
+	var requestBody RequestBodyConfigHunter
 
-		// process
-		h.ht.Configure(requestBody.Speed, requestBody.Position)
-
-		// response
-
-		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "prey configured",
-		})
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "invalid request")
+		return
 	}
+
+	// process
+	h.ht.Configure(requestBody.Speed, requestBody.Position)
+
+	// response
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message": "O caçador está configurada corretamente",
+	})
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	// request
 
-		// process
-		duration, err := h.ht.Hunt(h.pr)
-		if err != nil {
-			response.Error(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		success := err == nil
-
-		// response
-		response.JSON(w, http.StatusOK, map[string]any{
-			"message":  "hunt done",
-			"success":  success,
-			"duration": duration,
-		})
+	// process
+	duration, err := h.ht.Hunt(h.pr)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
 	}
+
+	// response
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message":  "A caça foi concluída.",
+		"success":  true,
+		"duration": duration,
+	})
 }
