@@ -67,23 +67,41 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	log.Println("call ConfigureHunter")
 
-		// process
-
-		// response
+	// request
+	var hunterConfig RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil || hunterConfig.Speed <= 0 || hunterConfig.Position == nil {
+		response.Error(w, http.StatusBadRequest, "caçador está configurado incorretamente")
+		return
 	}
+
+	// process
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	// response
+	response.Text(w, http.StatusOK, "caçador está configurado corretamente")
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	log.Println("call Hunt")
 
-		// process
-
-		// response
+	
+	// process
+	ok := true
+	duration, err := h.ht.Hunt(h.pr)
+	if err != nil {
+		ok = false
 	}
+	// response
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message": "caça concluída",
+		"data": map[string]any{
+			"success": ok,
+			"duration": duration,
+		},
+	})
 }
