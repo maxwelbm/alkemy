@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -80,10 +81,27 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
 
-		// process
+		startTime, err := h.ht.Hunt(h.pr)
+		if err != nil {
+			if !errors.Is(err, hunter.ErrCanNotHunt) {
+				response.Error(w, http.StatusInternalServerError, "internal server error")
+				return
+			}
+			response.Error(w, http.StatusBadRequest, "Não foi possível caçar a presa")
+			return
+		}
 
-		// response
+		captured, _ := h.ht.Hunt(h.pr)
+
+		details := map[string]interface{}{
+			"captured":   captured,
+			"time_taken": startTime,
+		}
+
+		response.JSON(w, http.StatusOK, map[string]interface{}{
+			"message": "Caça concluída",
+			"details": details,
+		})
 	}
 }
