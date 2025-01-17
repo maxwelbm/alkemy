@@ -6,13 +6,47 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
+	"testdoubles/internal/application"
 	"testdoubles/internal/handler"
 	"testdoubles/internal/positioner"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
+
+const HealthCheckEndpoint = "http://localhost:8080/hunter/healthcheck"
+
+func waitForServer(timeout time.Duration) {
+	deadline := time.Now().Add(timeout * time.Second)
+
+	for time.Now().Before(deadline) {
+		log.Println("Pinging server")
+		resp, err := http.DefaultClient.Get(HealthCheckEndpoint)
+		if err == nil && resp.StatusCode == http.StatusOK {
+			return
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	log.Fatal("Failed to connect to handler")
+}
+
+func init() {
+	go func() {
+		app := application.NewApplicationDefault(":8080", false)
+		if err := app.SetUp(); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := app.Run(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+	waitForServer(5)
+}
 
 func TestHandlerIntegration_ConfigurePrey(t *testing.T) {
 	cfgPrey := handler.RequestBodyConfigPrey{
