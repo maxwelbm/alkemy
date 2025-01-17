@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -67,23 +69,27 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	var hunterConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+		return
 	}
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	time, err := h.ht.Hunt(h.pr)
+	if err != nil {
+		if errors.Is(errors.Unwrap(err), hunter.ErrCanNotHunt) {
+			msg := fmt.Sprintf("caça concluída sem sucesso após %v segundos", time)
+			response.Text(w, http.StatusOK, msg)
+			return
+		}
+		response.Text(w, http.StatusInternalServerError, "erro interno")
 
-		// process
-
-		// response
 	}
+	msg := fmt.Sprintf("caça concluída com sucesso após %v segundos", time)
+	response.Text(w, http.StatusOK, msg)
 }
