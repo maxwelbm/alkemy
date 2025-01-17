@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -70,7 +71,13 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
-
+		var body RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			w.Header().Set("content-type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		// process
 
 		// response
@@ -85,5 +92,22 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// process
 
 		// response
+		duration, err := h.ht.Hunt(h.pr)
+		if err == nil {
+			json.NewEncoder(w).Encode(map[string]any{"message": "caça concluída", "duration": duration})
+			w.Header().Set("content-type", "application/json")
+			w.WriteHeader(http.StatusOK)
+		}
+		if err != nil {
+			if errors.Is(err, hunter.ErrCanNotHunt) {
+				json.NewEncoder(w).Encode(map[string]any{"message": "caça concluída", "duration": duration, "error": err.Error()})
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusOK)
+			} else {
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+
+		}
 	}
 }
