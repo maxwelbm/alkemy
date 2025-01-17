@@ -1,0 +1,7 @@
+repos:
+  - repo: local
+    hooks:
+      - id: do-nothing
+        name: Do Nothing Hook
+        entry: /bin/sh -c 'exit 0'
+        language: system

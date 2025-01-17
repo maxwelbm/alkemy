@@ -12,7 +12,6 @@ import (
 )
 
 func TestRealHunt(t *testing.T) {
-	// t.Skip("Skipping unless explicitly requested")
 	// Configure Prey
 	preyBody := `{
 		"speed": 4.0,
