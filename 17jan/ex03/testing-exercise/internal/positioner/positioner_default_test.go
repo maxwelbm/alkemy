@@ -1,3 +1,5 @@
+//go:build !integration
+
 package positioner_test
 
 import (
@@ -9,11 +11,11 @@ import (
 
 // Tests for PositionerDefault
 func TestPositionerDefault_GetLinearDistance(t *testing.T) {
-	type input struct { from, to *positioner.Position }
-	type output struct { linearDistance float64 }
+	type input struct{ from, to *positioner.Position }
+	type output struct{ linearDistance float64 }
 	type testCase struct {
-		name string
-		input input
+		name   string
+		input  input
 		output output
 	}
 
@@ -22,8 +24,8 @@ func TestPositionerDefault_GetLinearDistance(t *testing.T) {
 		{
 			name: "all coordinates are 0",
 			input: input{
-				from: &positioner.Position{ X: 0, Y: 0, Z: 0 },
-				to: &positioner.Position{ X: 0, Y: 0, Z: 0 },
+				from: &positioner.Position{X: 0, Y: 0, Z: 0},
+				to:   &positioner.Position{X: 0, Y: 0, Z: 0},
 			},
 			output: output{
 				linearDistance: 0,
@@ -34,8 +36,8 @@ func TestPositionerDefault_GetLinearDistance(t *testing.T) {
 		{
 			name: "all coordinates are 1",
 			input: input{
-				from: &positioner.Position{ X: 1, Y: 1, Z: 1 },
-				to: &positioner.Position{ X: 1, Y: 1, Z: 1 },
+				from: &positioner.Position{X: 1, Y: 1, Z: 1},
+				to:   &positioner.Position{X: 1, Y: 1, Z: 1},
 			},
 			output: output{
 				linearDistance: 0,
@@ -46,8 +48,8 @@ func TestPositionerDefault_GetLinearDistance(t *testing.T) {
 		{
 			name: "radicand is a perfect square",
 			input: input{
-				from: &positioner.Position{ X: 0, Y: 0, Z: 6 },
-				to: &positioner.Position{ X: 0, Y: 0, Z: 3 },
+				from: &positioner.Position{X: 0, Y: 0, Z: 6},
+				to:   &positioner.Position{X: 0, Y: 0, Z: 3},
 			},
 			output: output{
 				linearDistance: 3,
@@ -58,8 +60,8 @@ func TestPositionerDefault_GetLinearDistance(t *testing.T) {
 		{
 			name: "all negative coordinates",
 			input: input{
-				from: &positioner.Position{ X: -1, Y: -1, Z: -1 },
-				to: &positioner.Position{ X: -1, Y: -1, Z: -1 },
+				from: &positioner.Position{X: -1, Y: -1, Z: -1},
+				to:   &positioner.Position{X: -1, Y: -1, Z: -1},
 			},
 			output: output{
 				linearDistance: 0,

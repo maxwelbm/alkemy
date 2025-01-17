@@ -1,3 +1,5 @@
+//go:build !integration
+
 package response_test
 
 import (
@@ -18,7 +20,7 @@ func TestJSON(t *testing.T) {
 		// act
 		rr := httptest.NewRecorder()
 		code := http.StatusOK
-		body := struct{Message string}{Message: "ok"}
+		body := struct{ Message string }{Message: "ok"}
 		response.JSON(rr, code, body)
 
 		// assert
@@ -37,7 +39,7 @@ func TestJSON(t *testing.T) {
 		// act
 		rr := httptest.NewRecorder()
 		code := http.StatusBadRequest
-		body := struct{Message string}{Message: "bad request"}
+		body := struct{ Message string }{Message: "bad request"}
 		response.JSON(rr, code, body)
 
 		// assert

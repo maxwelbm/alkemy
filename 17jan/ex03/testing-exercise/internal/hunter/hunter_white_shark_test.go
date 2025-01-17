@@ -1,3 +1,5 @@
+//go:build !integration
+
 package hunter_test
 
 import (
@@ -71,7 +73,8 @@ func TestHunterWhiteShark_Hunt(t *testing.T) {
 		duration, err := impl.Hunt(pr)
 
 		// assert
-		expectedErr := hunter.ErrCanNotHunt; expectedErrMsg := "can not hunt the prey: shark can not catch the prey"
+		expectedErr := hunter.ErrCanNotHunt
+		expectedErrMsg := "can not hunt the prey: shark can not catch the prey"
 		expectedDuration := 0.0
 		expectedMockCallCanCatch := 1
 		require.ErrorIs(t, err, expectedErr)
@@ -106,7 +109,8 @@ func TestHunterWhiteShark_Hunt(t *testing.T) {
 		duration, err := impl.Hunt(pr)
 
 		// assert
-		expectedErr := hunter.ErrCanNotHunt; expErrMsg := "can not hunt the prey: shark can not catch the prey"
+		expectedErr := hunter.ErrCanNotHunt
+		expErrMsg := "can not hunt the prey: shark can not catch the prey"
 		expectedDuration := 0.0
 		expectedMockCallCanCatch := 1
 		require.ErrorIs(t, err, expectedErr)

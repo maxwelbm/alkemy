@@ -1,3 +1,5 @@
+//go:build !integration
+
 package simulator_test
 
 import (
@@ -28,11 +30,11 @@ func TestCatchSimulatorDefault_CanCatch(t *testing.T) {
 
 		// assert
 		expectedDuration := 20.0
-		expectedOk := true		
+		expectedOk := true
 		require.Equal(t, expectedDuration, duration)
 		require.Equal(t, expectedOk, ok)
 	})
-	
+
 	t.Run("Hunter can not catch the prey - hunter faster but long distance", func(t *testing.T) {
 		// arrange
 		ps := positioner.NewPositionerStub()
