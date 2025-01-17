@@ -1,54 +1,107 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"testdoubles/internal/handler"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
-	"testdoubles/internal/simulator"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestHunter_ConfigurePrey(t *testing.T) {
-	requestBody := RequestBodyConfigPrey{
-		Speed: 10.5,
+func TestHandler_ConfigurePrey(t *testing.T) {
+	shark := hunter.WhiteShark{}
+	tuna := prey.Tuna{}
+	hd := handler.NewHunter(&shark, &tuna)
+	f := hd.ConfigurePrey
+	body := handler.RequestBodyConfigPrey{
+		Speed: 5.0,
 		Position: &positioner.Position{
-			X: 100,
-			Y: 200,
+			X: 10,
+			Y: 20,
+			Z: 30,
 		},
 	}
-	body, _ := json.Marshal(requestBody)
+	expectedCode := http.StatusOK
 
-	req, err := http.NewRequest(http.MethodGet, "/hunter/configure-prey", bytes.NewReader(body))
-	if err != nil {
-		t.Fatalf("Não foi possível criar a requisição: %v", err)
-	}
+	b, err := json.Marshal(body)
+	require.NoError(t, err)
+	req := httptest.NewRequest("POST", "/", bytes.NewReader(b))
+	res := httptest.NewRecorder()
 
-	recorder := httptest.NewRecorder()
+	f(res, req)
 
-	ps := positioner.NewPositionerDefault()
+	require.Equal(t, expectedCode, res.Result().StatusCode)
+}
 
-	sm := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: ps,
+func TestHandler_ConfigureHunter(t *testing.T) {
+	shark := hunter.WhiteShark{}
+	tuna := prey.Tuna{}
+	hd := handler.NewHunter(&shark, &tuna)
+	f := hd.ConfigureHunter()
+	body := "some invalid request body"
+	expectedCode := http.StatusBadRequest
+
+	req := httptest.NewRequest("POST", "/", strings.NewReader(body))
+	res := httptest.NewRecorder()
+
+	f(res, req)
+
+	require.Equal(t, expectedCode, res.Result().StatusCode)
+}
+
+func TestHandler_Hunt(t *testing.T) {
+	shark := hunter.NewHunterMock()
+	t.Run("the hunt succeeds", func(t *testing.T) {
+		shark.HuntFunc = func(pr prey.Prey) (duration float64, err error) {
+			return 10.0, nil
+		}
+		hd := handler.NewHunter(shark, nil)
+		f := hd.Hunt()
+		expectedCode := http.StatusOK
+		expectedBody := `
+		{
+			"message":   "hunt executed successfully",
+			"success":   true,
+			"time_took": 10.0
+		}
+	`
+
+		req := httptest.NewRequest("POST", "/", nil)
+		res := httptest.NewRecorder()
+
+		f(res, req)
+
+		require.Equal(t, expectedCode, res.Result().StatusCode)
+		require.JSONEq(t, expectedBody, res.Body.String())
 	})
+	t.Run("the hunt fails", func(t *testing.T) {
+		shark.HuntFunc = func(pr prey.Prey) (duration float64, err error) {
+			return 0.0, hunter.ErrCanNotHunt
+		}
+		hd := handler.NewHunter(shark, nil)
+		f := hd.Hunt()
+		expectedCode := http.StatusOK
+		expectedBody := `
+		{
+			"message":   "hunt executed successfully",
+			"success":   false,
+			"time_took": 0.0
+		}
+	`
 
-	ht := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
-		Speed:     3.0,
-		Position:  &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0},
-		Simulator: sm,
+		req := httptest.NewRequest("POST", "/", nil)
+		res := httptest.NewRecorder()
+
+		f(res, req)
+
+		require.Equal(t, expectedCode, res.Result().StatusCode)
+		require.JSONEq(t, expectedBody, res.Body.String())
 	})
-
-	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
-
-	h := NewHunter(ht, pr)
-
-	h.ConfigurePrey(recorder, req)
-
-	assert.Equal(t, http.StatusOK, recorder.Code)
-	assert.Equal(t, "A presa está configurada corretamente", recorder.Body.String())
 }
