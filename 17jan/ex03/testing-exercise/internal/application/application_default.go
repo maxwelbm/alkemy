@@ -1,7 +1,6 @@
 package application
 
 import (
-	"log"
 	"net/http"
 	"testdoubles/internal/handler"
 	"testdoubles/internal/hunter"
@@ -18,11 +17,12 @@ type ApplicationDefault struct {
 	// rt is the router of the server
 	rt *chi.Mux
 	// addr is the address of the server
-	addr string
+	addr                string
+	useChiLogMiddleware bool
 }
 
 // NewApplicationDefault creates a new ApplicationDefault instance.
-func NewApplicationDefault(addr string) *ApplicationDefault {
+func NewApplicationDefault(addr string, useChiLogMiddleware bool) *ApplicationDefault {
 	// default config
 	defaultRouter := chi.NewRouter()
 	defaultAddr := ":8080"
@@ -31,8 +31,9 @@ func NewApplicationDefault(addr string) *ApplicationDefault {
 	}
 
 	return &ApplicationDefault{
-		rt:   defaultRouter,
-		addr: defaultAddr,
+		rt:                  defaultRouter,
+		addr:                defaultAddr,
+		useChiLogMiddleware: useChiLogMiddleware,
 	}
 }
 
@@ -43,8 +44,6 @@ func (a *ApplicationDefault) TearDown() (err error) {
 
 // SetUp sets up the application.
 func (a *ApplicationDefault) SetUp() (err error) {
-	log.Println("call SetUp")
-
 	// dependencies
 	// - positioner
 	ps := positioner.NewPositionerDefault()
@@ -66,10 +65,15 @@ func (a *ApplicationDefault) SetUp() (err error) {
 
 	// router
 	// - middlewares
-	a.rt.Use(middleware.Logger)
+	if a.useChiLogMiddleware {
+		a.rt.Use(middleware.Logger)
+	}
 	a.rt.Use(middleware.Recoverer)
 	// - routes / endpoints
 	a.rt.Route("/hunter", func(r chi.Router) {
+		r.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
 		// POST /hunter/configure-prey
 		r.Post("/configure-prey", hd.ConfigurePrey)
 		// POST /hunter/configure-hunter

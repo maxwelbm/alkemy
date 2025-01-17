@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
@@ -43,7 +42,6 @@ type RequestBodyConfigPrey struct {
 
 // ConfigurePrey configures the prey for the hunter.
 func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
-	log.Println("call ConfigurePrey")
 
 	// request
 	var hunterConfig RequestBodyConfigPrey
