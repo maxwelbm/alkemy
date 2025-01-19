@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - '**' # Escuta todas as branches
+  pull_request:
+    branches:
+      - '**' # Escuta eventos de PR em qualquer branch
 
 jobs:
   test:
