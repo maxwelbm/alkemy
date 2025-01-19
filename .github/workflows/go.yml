@@ -22,8 +22,10 @@ jobs:
 
       # Step 3: Instalar dependências
       - name: Install dependencies
+        working-directory: 17jan/ex03/testing-exercise
         run: go mod tidy
 
       # Step 4: Rodar os testes
       - name: Run tests
+        working-directory: 17jan/ex03/testing-exercise
         run: go test ./... -v
