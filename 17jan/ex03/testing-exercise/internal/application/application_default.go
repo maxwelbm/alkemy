@@ -8,6 +8,7 @@ import (
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
 	"testdoubles/internal/simulator"
+	"testdoubles/platform/web/response"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -75,6 +76,10 @@ func (a *ApplicationDefault) SetUp() (err error) {
 		r.Post("/configure-hunter", hd.ConfigureHunter())
 		// POST /hunter/hunt
 		r.Post("/hunt", hd.Hunt())
+	})
+
+	a.rt.Get("/healthcheck", func(w http.ResponseWriter, r *http.Request) {
+		response.Text(w, http.StatusOK, "Server is healthy")
 	})
 
 	return

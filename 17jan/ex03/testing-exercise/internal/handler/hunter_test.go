@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"testdoubles/internal/handler"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
@@ -16,7 +17,7 @@ import (
 )
 
 func TestHunter_ConfigurePrey(t *testing.T) {
-	requestBody := RequestBodyConfigPrey{
+	requestBody := handler.RequestBodyConfigPrey{
 		Speed: 10.5,
 		Position: &positioner.Position{
 			X: 100,
@@ -46,7 +47,7 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 
 	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
 
-	h := NewHunter(ht, pr)
+	h := handler.NewHunter(ht, pr)
 
 	h.ConfigurePrey(recorder, req)
 
@@ -75,7 +76,7 @@ func TestHunter_ConfigurePrey_BadRequest(t *testing.T) {
 	})
 	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
 
-	h := NewHunter(ht, pr)
+	h := handler.NewHunter(ht, pr)
 
 	h.ConfigurePrey(recorder, req)
 
@@ -86,7 +87,7 @@ func TestHunter_ConfigurePrey_BadRequest(t *testing.T) {
 
 func TestHunter_Hunt(t *testing.T) {
 
-	requestBodyHunter := RequestBodyConfigHunter{
+	requestBodyHunter := handler.RequestBodyConfigHunter{
 		Speed: 12.0,
 		Position: &positioner.Position{
 			X: 0.0,
@@ -115,7 +116,7 @@ func TestHunter_Hunt(t *testing.T) {
 
 	pr := prey.NewTuna(5.0, &positioner.Position{X: 10.0, Y: 10.0, Z: 0.0})
 
-	h := NewHunter(ht, pr)
+	h := handler.NewHunter(ht, pr)
 
 	h.ConfigureHunter()(recorderHunter, reqHunter)
 
@@ -137,7 +138,7 @@ func TestHunter_Hunt(t *testing.T) {
 
 func TestHunter_Hunt_LowerSpeed(t *testing.T) {
 
-	requestBodyHunter := RequestBodyConfigHunter{
+	requestBodyHunter := handler.RequestBodyConfigHunter{
 		Speed: 1.0,
 		Position: &positioner.Position{
 			X: 0.0,
@@ -168,7 +169,7 @@ func TestHunter_Hunt_LowerSpeed(t *testing.T) {
 	// speed tuna is greater than speed hunter
 	pr := prey.NewTuna(5.0, &positioner.Position{X: 10.0, Y: 10.0, Z: 0.0})
 
-	h := NewHunter(ht, pr)
+	h := handler.NewHunter(ht, pr)
 
 	// Configure hunter
 	h.ConfigureHunter()(recorderHunter, reqHunter)
@@ -204,7 +205,7 @@ func TestHunter_ConfigurePrey_InternalServerError(t *testing.T) {
 	// Configure prey
 	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
 
-	h := NewHunter(ht, pr)
+	h := handler.NewHunter(ht, pr)
 
 	h.Hunt()(recorder, req)
 
