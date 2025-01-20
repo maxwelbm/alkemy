@@ -1,54 +1,66 @@
 package handler
 
 import (
-	"bytes"
-	"encoding/json"
+	"fmt"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"testdoubles/internal/hunter"
-	"testdoubles/internal/positioner"
+	"strings"
 	"testdoubles/internal/prey"
-	"testdoubles/internal/simulator"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestHunter_ConfigurePrey(t *testing.T) {
-	requestBody := RequestBodyConfigPrey{
-		Speed: 10.5,
-		Position: &positioner.Position{
-			X: 100,
-			Y: 200,
-		},
-	}
-	body, _ := json.Marshal(requestBody)
+func TestHandlerConfigurePrey(t *testing.T) {
 
-	req, err := http.NewRequest(http.MethodGet, "/hunter/configure-prey", bytes.NewReader(body))
-	if err != nil {
-		t.Fatalf("Não foi possível criar a requisição: %v", err)
-	}
+	t.Run("case 1: prey configured successfully", func(t *testing.T) {
+		// arrange
+		// - prey: stub
+		pr := prey.NewPreyStub()
+		// - handler
+		hd := NewHunter(nil, pr)
+		hdFunc := hd.ConfigurePrey()
 
-	recorder := httptest.NewRecorder()
+		// act
+		request := httptest.NewRequest("POST", "/", strings.NewReader(
+			`{"speed": 5.9, "position": {"X": 0.0, "Y": 0.0, "Z": 0.0}}`,
+		))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		hdFunc(response, request)
 
-	ps := positioner.NewPositionerDefault()
-
-	sm := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: ps,
+		// assert
+		expectedCode := http.StatusOK
+		expectedBody := `{"message":"A presa está configurada corretamente","data":null}`
+		expectedHeaders := http.Header{"Content-Type": []string{"application/json"}}
+		require.Equal(t, expectedCode, response.Code)
+		require.JSONEq(t, expectedBody, response.Body.String())
+		require.Equal(t, expectedHeaders, response.Header())
 	})
 
-	ht := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
-		Speed:     3.0,
-		Position:  &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0},
-		Simulator: sm,
+	t.Run("case 2: prey configured failed - invalid request body", func(t *testing.T) {
+		// arrange
+		// - handler
+		hd := NewHunter(nil, nil)
+		hdFunc := hd.ConfigurePrey()
+
+		// act
+		request := httptest.NewRequest("POST", "/", strings.NewReader(
+			`invalid request body`,
+		))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		hdFunc(response, request)
+
+		// assert
+		expectedCode := http.StatusBadRequest
+		expectedBody := fmt.Sprintf(
+			`{"status":"%s","message":"%s"}`,
+			http.StatusText(expectedCode),
+			"Erro ao decodificar JSON: invalid character 'i' looking for beginning of value",
+		)
+		expectedHeaders := http.Header{"Content-Type": []string{"application/json"}}
+		require.Equal(t, expectedCode, response.Code)
+		require.JSONEq(t, expectedBody, response.Body.String())
+		require.Equal(t, expectedHeaders, response.Header())
 	})
-
-	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
-
-	h := NewHunter(ht, pr)
-
-	h.ConfigurePrey(recorder, req)
-
-	assert.Equal(t, http.StatusOK, recorder.Code)
-	assert.Equal(t, "A presa está configurada corretamente", recorder.Body.String())
 }

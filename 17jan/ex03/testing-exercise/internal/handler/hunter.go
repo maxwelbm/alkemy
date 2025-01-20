@@ -43,22 +43,27 @@ type RequestBodyConfigPrey struct {
 // }'
 
 // ConfigurePrey configures the prey for the hunter.
-func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
-	log.Println("call ConfigurePrey")
+func (h *Hunter) ConfigurePrey() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("call ConfigurePrey")
 
-	// request
-	var configPrey RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&configPrey)
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
-		return
+		// request
+		var configPrey RequestBodyConfigPrey
+		err := json.NewDecoder(r.Body).Decode(&configPrey)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
+
+		// process
+		h.pr.Configure(configPrey.Speed, configPrey.Position)
+
+		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "A presa está configurada corretamente",
+			"data":    nil,
+		})
 	}
-
-	// process
-	h.pr.Configure(configPrey.Speed, configPrey.Position)
-
-	// response
-	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 }
 
 // RequestBodyConfigHunter is an struct to configure the hunter in JSON format.
