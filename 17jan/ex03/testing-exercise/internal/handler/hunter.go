@@ -77,7 +77,7 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 		var body RequestBodyConfigHunter
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, "")
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 			return
 		}
 		// process
