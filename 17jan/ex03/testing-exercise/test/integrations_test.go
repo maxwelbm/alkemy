@@ -140,7 +140,6 @@ func TestIntegrations(t *testing.T) {
 	defer res.Body.Close()
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	// responseBody := new(bytes.Buffer)
 
 	var responseBody struct {
 		Message  string `json:"message"`
@@ -152,13 +151,10 @@ func TestIntegrations(t *testing.T) {
 	require.NoError(t, err)
 	defer res.Body.Close()
 
-	// _, err = responseBody.ReadFrom(res.Body)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
 	require.Equal(t, "prey hunted", responseBody.Message)
-	// require.True(t, responseBody.Sucess)
 }
