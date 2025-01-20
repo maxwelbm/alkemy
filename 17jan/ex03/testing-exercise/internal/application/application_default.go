@@ -13,6 +13,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+type ConfigApplicationDefault struct {
+	// Addr is the address of the application.
+	Addr string
+}
+
 // ApplicationDefault is the default implementation of Application interface.
 type ApplicationDefault struct {
 	// rt is the router of the server
@@ -72,9 +77,9 @@ func (a *ApplicationDefault) SetUp() (err error) {
 		// POST /hunter/configure-prey
 		r.Post("/configure-prey", hd.ConfigurePrey)
 		// POST /hunter/configure-hunter
-		r.Post("/configure-hunter", hd.ConfigureHunter())
+		r.Post("/configure-hunter", hd.ConfigureHunter)
 		// POST /hunter/hunt
-		r.Post("/hunt", hd.Hunt())
+		r.Post("/hunt", hd.Hunt)
 	})
 
 	return
