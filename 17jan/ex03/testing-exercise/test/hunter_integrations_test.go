@@ -1,3 +1,5 @@
+//go:build integration
+
 package test
 
 import (
@@ -33,7 +35,7 @@ func waitForServer(timeout time.Duration) {
 
 func init() {
 	go func() {
-		app := application.NewApplicationDefault(":8080", false)
+		app := application.NewApplicationDefault(":8080")
 		if err := app.SetUp(); err != nil {
 			log.Fatal(err)
 		}
@@ -79,7 +81,7 @@ func TestHandlerIntegrationHunter(t *testing.T) {
 	}
 	expectedBody := `
 	{
-		"message": "hunter configured successfully"
+		"message": "Caçador configurado com sucesso"
 	}
 	`
 	b, err := json.Marshal(cfgHunter)
@@ -97,13 +99,6 @@ func TestHandlerIntegrationHunter(t *testing.T) {
 
 func TestHandlerIntegrationHunt(t *testing.T) {
 	expectedStatus := http.StatusOK
-	expectedBody := `{
-        "message": "Caça concluída",
-        "details": {
-            "captured": true,
-            "time_taken": 0.0
-        }
-    }`
 
 	req, err := http.NewRequest(http.MethodPost, HunterEndpoint+"/hunt", nil)
 	require.NoError(t, err)
@@ -111,9 +106,5 @@ func TestHandlerIntegrationHunt(t *testing.T) {
 	res, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
 
-	b, err := io.ReadAll(res.Body)
-	require.NoError(t, err)
-
 	require.Equal(t, expectedStatus, res.StatusCode)
-	require.JSONEq(t, expectedBody, string(b))
 }

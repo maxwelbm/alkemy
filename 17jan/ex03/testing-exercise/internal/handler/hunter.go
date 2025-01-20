@@ -79,7 +79,9 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 
 		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
-		response.Text(w, http.StatusOK, "Caçador configurado com sucesso")
+		response.JSON(w, http.StatusOK, map[string]interface{}{
+			"message": "Caçador configurado com sucesso",
+		})
 	}
 }
 
