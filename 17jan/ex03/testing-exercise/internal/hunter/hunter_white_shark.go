@@ -17,7 +17,7 @@ func init() {
 func CreateWhiteShark(simulator simulator.CatchSimulator) (h Hunter) {
 	// default config
 	// -> speed: 144 m/s
-	speed := rand.Float64() * 144.0 + 15.0
+	speed := rand.Float64()*144.0 + 15.0
 	// -> position: random
 	position := &positioner.Position{
 		X: rand.Float64() * 500,
@@ -35,8 +35,8 @@ func CreateWhiteShark(simulator simulator.CatchSimulator) (h Hunter) {
 
 // ConfigWhiteShark is the configuration for WhiteShark
 type ConfigWhiteShark struct {
-	Speed float64
-	Position *positioner.Position
+	Speed     float64
+	Position  *positioner.Position
 	Simulator simulator.CatchSimulator
 }
 
@@ -73,9 +73,10 @@ func (w *WhiteShark) Hunt(prey prey.Prey) (duration float64, err error) {
 		Position: w.position,
 		Speed:    w.speed,
 	}
-	
+
 	// check if shark can catch the prey
 	duration, ok := w.simulator.CanCatch(sharkSubject, preySubject)
+
 	if !ok {
 		err = fmt.Errorf("%w: shark can not catch the prey", ErrCanNotHunt)
 		return

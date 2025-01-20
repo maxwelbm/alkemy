@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="0aac0c9c-a1a8-4a49-a5c1-f530296f7f0b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/ex03/testing-exercise/internal/application/application_default.go" beforeDir="false" afterPath="$PROJECT_DIR$/ex03/testing-exercise/internal/application/application_default.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ex03/testing-exercise/internal/handler/hunter.go" beforeDir="false" afterPath="$PROJECT_DIR$/ex03/testing-exercise/internal/handler/hunter.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ex03/testing-exercise/internal/handler/hunter_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/ex03/testing-exercise/internal/handler/hunter_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ex03/testing-exercise/internal/hunter/hunter_white_shark.go" beforeDir="false" afterPath="$PROJECT_DIR$/ex03/testing-exercise/internal/hunter/hunter_white_shark.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" url="file:///opt/homebrew/opt/go/libexec" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2rlZX6SJdgJfQgs0bvY6PHUpl7W" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Go Build.go build main.go.executor": "Run",
+    "Go Test.TestHunter_ConfigureHunter in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigureHunter/Foi_possivel_configurar_caçador in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigureHunter/Não_foi_possivel_configurar_caçador_por_request_body_invalido in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey/Failed in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey/Foi_possivel_configurar_Prey in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey/Foi_possivel_configurar_presa in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey/Não_foi_possivel_configurar_presa in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey/Não_foi_possivel_configurar_presa_por_request_body_invalido in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_ConfigurePrey/Success in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_Hunt in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_Hunt/Caça_concluída_e_capturada in testdoubles/internal/handler.executor": "Run",
+    "Go Test.TestHunter_Hunt/Caça_concluída_e_nao_capturada in testdoubles/internal/handler.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "main",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/dfcoelho/Documents/bootcamp/testing/alkemy/17jan",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
+  }
+}]]></component>
+  <component name="RunManager" selected="Go Test.TestHunter_Hunt/Caça_concluída_e_nao_capturada in testdoubles/internal/handler">
+    <configuration name="TestHunter_ConfigurePrey in testdoubles/internal/handler" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="17jan" />
+      <working_directory value="$PROJECT_DIR$/ex03/testing-exercise/internal/handler" />
+      <root_directory value="$PROJECT_DIR$/ex03/testing-exercise" />
+      <kind value="PACKAGE" />
+      <package value="testdoubles/internal/handler" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHunter_ConfigurePrey\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestHunter_ConfigurePrey/Não_foi_possivel_configurar_presa in testdoubles/internal/handler" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="17jan" />
+      <working_directory value="$PROJECT_DIR$/ex03/testing-exercise/internal/handler" />
+      <root_directory value="$PROJECT_DIR$/ex03/testing-exercise" />
+      <kind value="PACKAGE" />
+      <package value="testdoubles/internal/handler" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHunter_ConfigurePrey\E$/^\QNão_foi_possivel_configurar_presa\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestHunter_Hunt in testdoubles/internal/handler" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="17jan" />
+      <working_directory value="$PROJECT_DIR$/ex03/testing-exercise/internal/handler" />
+      <root_directory value="$PROJECT_DIR$/ex03/testing-exercise" />
+      <kind value="PACKAGE" />
+      <package value="testdoubles/internal/handler" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHunter_Hunt\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestHunter_Hunt/Caça_concluída_e_capturada in testdoubles/internal/handler" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="17jan" />
+      <working_directory value="$PROJECT_DIR$/ex03/testing-exercise/internal/handler" />
+      <root_directory value="$PROJECT_DIR$/ex03/testing-exercise" />
+      <kind value="PACKAGE" />
+      <package value="testdoubles/internal/handler" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHunter_Hunt\E$/^\QCaça_concluída_e_capturada\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestHunter_Hunt/Caça_concluída_e_nao_capturada in testdoubles/internal/handler" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="17jan" />
+      <working_directory value="$PROJECT_DIR$/ex03/testing-exercise/internal/handler" />
+      <root_directory value="$PROJECT_DIR$/ex03/testing-exercise" />
+      <kind value="PACKAGE" />
+      <package value="testdoubles/internal/handler" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHunter_Hunt\E$/^\QCaça_concluída_e_nao_capturada\E$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestHunter_Hunt/Caça_concluída_e_nao_capturada in testdoubles/internal/handler" />
+        <item itemvalue="Go Test.TestHunter_Hunt/Caça_concluída_e_capturada in testdoubles/internal/handler" />
+        <item itemvalue="Go Test.TestHunter_Hunt in testdoubles/internal/handler" />
+        <item itemvalue="Go Test.TestHunter_ConfigurePrey in testdoubles/internal/handler" />
+        <item itemvalue="Go Test.TestHunter_ConfigurePrey/Não_foi_possivel_configurar_presa in testdoubles/internal/handler" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-d297c17c1fbd-d82d926f19eb-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-243.22562.186" />
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-GO-243.22562.186" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>

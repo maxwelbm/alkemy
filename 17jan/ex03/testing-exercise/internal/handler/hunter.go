@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -46,15 +47,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -67,23 +68,49 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	log.Println("call ConfigureHunter")
 
-		// process
-
-		// response
+	// request
+	var hunterConfig RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+		return
 	}
+
+	// process
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	// response
+	response.Text(w, http.StatusOK, "O caçador está configurado corretamente")
+}
+
+type ResponseBodyHunt struct {
+	Message  string  `json:"message"`
+	Duration float64 `json:"duration,omitempty"`
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	log.Println("call Hunt")
+	// process
+	duration, err := h.ht.Hunt(h.pr)
 
-		// process
-
-		// response
+	if err != nil {
+		if errors.Is(err, hunter.ErrCanNotHunt) {
+			response.JSON(w, http.StatusOK, ResponseBodyHunt{
+				Message: "Caça concluída",
+			})
+			return
+		}
+		response.Error(w, http.StatusInternalServerError, err.Error())
+		return
 	}
+
+	// response
+	response.JSON(w, http.StatusOK, ResponseBodyHunt{
+		Message:  "Caça concluída",
+		Duration: duration,
+	})
 }
