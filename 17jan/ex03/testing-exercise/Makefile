@@ -3,6 +3,14 @@
 tests:
 	go test -v ./...
 
+.PHONY int-tests:
+int-tests:
+	@go run cmd/main.go & \
+	SERVER_PID=$$!; \
+	sleep 1;  \
+	go test tests/integration_test.go -tags special; \
+	if ps -p $$SERVER_PID > /dev/null; then kill $$SERVER_PID; fi
+
 # This command will generate a coverage report for the project
 .PHONY: coverage
 coverage:
