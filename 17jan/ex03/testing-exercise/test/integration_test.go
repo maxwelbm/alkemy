@@ -111,3 +111,52 @@ func TestHunter_ConfigureHunter(t *testing.T) {
 		})
 	}
 }
+
+func TestHunter_Hunt(t *testing.T) {
+	cases := []struct {
+		name         string
+		expectedCode int
+		expectedBody string
+		tunaPosition *positioner.Position
+	}{
+		{
+			name:         "case 1: hunter can hunt pray",
+			expectedCode: 200,
+			expectedBody: `{"duration":1,"message":"caça concluída"}`,
+			tunaPosition: &positioner.Position{X: 3.0, Y: 0.0, Z: 0.0},
+		},
+		{
+			name:         "case 2: hunter can't hunt pray",
+			expectedCode: 200,
+			expectedBody: `{"duration":0,"error":"can not hunt the prey","message":"caça concluída"}`,
+			tunaPosition: &positioner.Position{X: 900.0, Y: 2000.0, Z: 30000.0},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			req, _ := http.NewRequest(http.MethodGet, "/hunter/hunt", nil)
+			recorder := httptest.NewRecorder()
+			ps := positioner.NewPositionerDefault()
+			sm := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
+				MaxTimeToCatch: 3,
+				Positioner:     ps,
+			})
+			ht := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
+				Speed:     4,
+				Position:  &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0},
+				Simulator: sm,
+			})
+			pr := prey.NewTuna(1, c.tunaPosition)
+			h := handler.NewHunter(ht, pr)
+
+			router := chi.NewRouter()
+			router.HandleFunc("/hunter/hunt", h.Hunt())
+			router.ServeHTTP(recorder, req)
+
+			assert.Equal(t, c.expectedCode, recorder.Code)
+			assert.Equal(t, c.expectedBody, recorder.Body.String())
+		})
+	}
+
+}
