@@ -44,5 +44,4 @@ func TestRealHunt(t *testing.T) {
 	defer res.Body.Close()
 
 	require.Equal(t, http.StatusOK, res.StatusCode)
-	res.Body.Close()
 }
