@@ -29,7 +29,7 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 	expectedCode := http.StatusOK
 
 	req := newRequest("POST", "/", body)
-	res := executeRequest(hd.ConfigurePrey, req)
+	res := executeRequest(hd.ConfigurePrey(), req)
 
 	require.Equal(t, expectedCode, res.Result().StatusCode)
 }
@@ -43,7 +43,7 @@ func TestHandler_ConfigureHunter_BadRequest(t *testing.T) {
 	expectedCode := http.StatusBadRequest
 
 	req := newRequest("POST", "/", body)
-	res := executeRequest(hd.ConfigureHunter, req)
+	res := executeRequest(hd.ConfigureHunter(), req)
 
 	require.Equal(t, expectedCode, res.Result().StatusCode)
 }
@@ -52,7 +52,7 @@ func TestHandler_ConfigureHunter(t *testing.T) {
 	shark := hunter.WhiteShark{}
 	tuna := prey.Tuna{}
 	hd := NewHunter(&shark, &tuna)
-	f := hd.ConfigureHunter
+	f := hd.ConfigureHunter()
 	body := RequestBodyConfigHunter{
 		Speed: 35.0,
 		Position: &positioner.Position{
@@ -65,8 +65,7 @@ func TestHandler_ConfigureHunter(t *testing.T) {
 
 	req := newRequest("POST", "/", body)
 	res := httptest.NewRecorder()
-
-	f(res, req)
+	f.ServeHTTP(res, req)
 
 	require.Equal(t, expectedCode, res.Result().StatusCode)
 }
@@ -115,7 +114,7 @@ func TestHandler_Hunt(t *testing.T) {
 			hd := NewHunter(shark, nil)
 
 			req := httptest.NewRequest("POST", "/", nil)
-			res := executeRequest(hd.Hunt, req)
+			res := executeRequest(hd.Hunt(), req)
 
 			require.Equal(t, tt.expectedCode, res.Result().StatusCode)
 			require.JSONEq(t, tt.expectedBody, res.Body.String())
@@ -135,7 +134,8 @@ func TestHandler_ConfigurePrey_InvalidJSON(t *testing.T) {
 	req := httptest.NewRequest("POST", "/", strings.NewReader(body))
 	res := httptest.NewRecorder()
 
-	hd.ConfigurePrey(res, req)
+	configurePrey := hd.ConfigurePrey()
+	configurePrey.ServeHTTP(res, req)
 
 	require.Equal(t, expectedCode, res.Result().StatusCode)
 
