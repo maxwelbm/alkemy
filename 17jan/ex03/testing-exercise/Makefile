@@ -8,6 +8,10 @@ tests:
 coverage:
 	go test -cover -coverprofile=coverage.out ./...
 
+.PHONY: test-special
+test-special:
+	go test ./... -tags special
+
 # This command will display the coverage report in an HTML file
 .PHONY: coverage-html
 coverage-html: coverage
