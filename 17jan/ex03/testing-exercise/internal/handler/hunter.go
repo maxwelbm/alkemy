@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
@@ -44,8 +43,6 @@ type RequestBodyConfigPrey struct {
 
 // ConfigurePrey configures the prey for the hunter.
 func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
-	log.Println("call ConfigurePrey")
-
 	// request
 	var hunterConfig RequestBodyConfigPrey
 	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
@@ -70,7 +67,6 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("call ConfigureHunter")
 		var hunterConfig RequestBodyConfigHunter
 		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
 		if err != nil {
@@ -86,7 +82,6 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Hunting...")
 		huntDuration, err := h.ht.Hunt(h.pr)
 		if err != nil {
 			if errors.Is(err, hunter.ErrCanNotHunt) {
