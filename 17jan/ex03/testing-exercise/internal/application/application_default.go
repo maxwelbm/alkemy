@@ -70,7 +70,7 @@ func (a *ApplicationDefault) SetUp() (err error) {
 	// - routes / endpoints
 	a.rt.Route("/hunter", func(r chi.Router) {
 		// POST /hunter/configure-prey
-		r.Post("/configure-prey", hd.ConfigurePrey)
+		r.Post("/configure-prey", hd.ConfigurePrey())
 		// POST /hunter/configure-hunter
 		r.Post("/configure-hunter", hd.ConfigureHunter())
 		// POST /hunter/hunt

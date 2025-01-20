@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -42,22 +43,24 @@ type RequestBodyConfigPrey struct {
 // }'
 
 // ConfigurePrey configures the prey for the hunter.
-func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
-	log.Println("call ConfigurePrey")
+func (h *Hunter) ConfigurePrey() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("call ConfigurePrey")
 
-	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
-		return
+		// request
+		var hunterConfig RequestBodyConfigPrey
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
+
+		// process
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+		// response
+		response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 	}
-
-	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
-
-	// response
-	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 }
 
 // RequestBodyConfigHunter is an struct to configure the hunter in JSON format.
@@ -70,10 +73,18 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
+		var hunterConfig RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Incorrect hunter configuration, issues with request body")
+			return
+		}
 
 		// process
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{"message": "Hunter configured"})
 	}
 }
 
@@ -83,7 +94,19 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// request
 
 		// process
+		duration, err := h.ht.Hunt(h.pr)
 
 		// response
+		if err != nil {
+			if errors.Is(err, hunter.ErrCanNotHunt) {
+				response.JSON(w, http.StatusOK, map[string]any{"message": "hunting completed", "duration": duration, "error": "can not hunt the prey"})
+				return
+			} else {
+				response.Error(w, http.StatusInternalServerError, "internal server error")
+				return
+			}
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{"message": "hunting completed", "duration": duration})
 	}
 }
