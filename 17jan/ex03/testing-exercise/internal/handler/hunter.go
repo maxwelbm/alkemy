@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -46,15 +47,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var configPrey RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&configPrey)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(configPrey.Speed, configPrey.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -70,10 +71,21 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
+		var configHunter RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&configHunter)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
 
 		// process
+		h.ht.Configure(configHunter.Speed, configHunter.Position)
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "hunter configured",
+			"data":    nil,
+		})
 	}
 }
 
@@ -83,7 +95,22 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// request
 
 		// process
+		duration, err := h.ht.Hunt(h.pr)
+		if err != nil {
+			if !errors.Is(err, hunter.ErrCanNotHunt) {
+				response.Error(w, http.StatusInternalServerError, "internal server error")
+				return
+			}
+		}
+		ok := err == nil
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "hunt done",
+			"data": map[string]any{
+				"success":  ok,
+				"duration": duration,
+			},
+		})
 	}
 }
