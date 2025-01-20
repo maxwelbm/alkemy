@@ -63,7 +63,7 @@ func TestHunter_ConfigureHunter_InvalidRequest(t *testing.T) {
 	}
 	body, _ := json.Marshal(requestBody)
 
-	req, err := http.NewRequest(http.MethodGet, "/hunter/configure-hunter", bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, "/hunter/configure-hunter", bytes.NewReader(body))
 	if err != nil {
 		t.Fatalf("Não foi possível criar a requisição: %v", err)
 	}

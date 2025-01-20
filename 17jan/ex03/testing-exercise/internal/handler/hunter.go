@@ -46,15 +46,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -89,13 +89,13 @@ func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
 func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
 	log.Println("call Hunt")
 
-	
 	// process
 	ok := true
 	duration, err := h.ht.Hunt(h.pr)
 	if err != nil {
 		ok = false
 	}
+
 	// response
 	response.JSON(w, http.StatusOK, map[string]any{
 		"message": "caça concluída",
