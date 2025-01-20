@@ -50,7 +50,8 @@ func (a *ApplicationDefault) SetUp() (err error) {
 	ps := positioner.NewPositionerDefault()
 	// - catch simulator
 	sm := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: ps,
+		MaxTimeToCatch: 10000.00,
+		Positioner:     ps,
 	})
 	// - hunter
 	ht := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
