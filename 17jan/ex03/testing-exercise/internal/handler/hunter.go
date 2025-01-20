@@ -17,29 +17,15 @@ func NewHunter(ht hunter.Hunter, pr prey.Prey) *Hunter {
 
 // Hunter returns handlers to manage hunting.
 type Hunter struct {
-	// ht is the Hunter interface that this handler will use
 	ht hunter.Hunter
-	// pr is the Prey interface that the hunter will hunt
 	pr prey.Prey
 }
 
-// RequestBodyConfigPrey is an struct to configure the prey for the hunter in JSON format.
+// RequestBodyConfigPrey is a struct to configure the prey for the hunter in JSON format.
 type RequestBodyConfigPrey struct {
 	Speed    float64              `json:"speed"`
 	Position *positioner.Position `json:"position"`
 }
-
-// Example
-// curl -X POST http://localhost:8080/hunter/configure-prey \
-// -H "Content-Type: application/json" \
-// -d '{
-//   "speed": 4.0,
-//   "position": {
-//     "X": 0.1,
-//     "Y": 0.4,
-//     "Z": 3.1
-//   }
-// }'
 
 // ConfigurePrey configures the prey for the hunter.
 func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +35,7 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	var hunterConfig RequestBodyConfigPrey
 	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+		response.Error(w, http.StatusBadRequest, "problems with the request body")
 		return
 	}
 
@@ -57,28 +43,35 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 	// response
-	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
+	response.JSON(w, http.StatusOK, map[string]string{"message": "Prey set up"})
 }
 
-// RequestBodyConfigHunter is an struct to configure the hunter in JSON format.
-type RequestBodyConfigHunter struct {
-	Speed    float64              `json:"speed"`
-	Position *positioner.Position `json:"position"`
+// Hunt hunts the prey and returns the result.
+func (h *Hunter) Hunt() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("call Hunt")
+
+		// process the hunt
+		duration, err := h.ht.Hunt(h.pr)
+		if err != nil {
+			log.Println("error during hunt:", err)
+			response.Error(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
+
+		// build response
+		response.JSON(w, http.StatusOK, map[string]interface{}{
+			"message": "hunt complete",
+			"data": map[string]interface{}{
+				"success":  true, // Assume true for success if no error
+				"duration": duration,
+			},
+		})
+	}
 }
 
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
-	}
-}
-
-// Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
 
