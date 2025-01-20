@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -82,13 +83,13 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
 		// process
 		dur, err := h.ht.Hunt(h.pr)
+
 		// response
 		if err != nil {
 			switch {
-			case err == hunter.ErrCanNotHunt:
+			case errors.Is(err, hunter.ErrCanNotHunt):
 				response.JSON(w, http.StatusOK, map[string]any{
 					"message": "hunt completed",
 					"status":  "hunter can not hunt the prey after " + fmt.Sprintf("%f", dur) + " seconds",

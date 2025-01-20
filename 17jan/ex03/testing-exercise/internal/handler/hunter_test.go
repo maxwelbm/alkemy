@@ -248,7 +248,7 @@ func TestHunterHandler_Hunt(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run("", func(t *testing.T) {
+		t.Run(tc.description, func(t *testing.T) {
 			// handler and its dependencies
 			mockHunter := tc.mock()
 
