@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -69,21 +70,40 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		log.Println("call ConfigureHunter")
+		var hunterConfig RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
-		// process
-
-		// response
+		response.Text(w, http.StatusOK, "O caçador está configurado corretamente")
 	}
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
+		log.Println("Hunting...")
+		huntDuration, err := h.ht.Hunt(h.pr)
+		if err != nil {
+			if errors.Is(err, hunter.ErrCanNotHunt) {
+				response.JSON(w, http.StatusOK, map[string]interface{}{
+					"message":  "caçada concluída.",
+					"result:":  "presa fugiu.",
+					"duration": huntDuration,
+				})
+				return
+			}
+			response.Error(w, http.StatusInternalServerError, "internal server error")
+			return
+		}
+		response.JSON(w, http.StatusOK, map[string]interface{}{
+			"message":  "caçada concluída com sucesso.",
+			"result:":  "presa capturada.",
+			"duration": huntDuration,
+		})
 	}
 }
