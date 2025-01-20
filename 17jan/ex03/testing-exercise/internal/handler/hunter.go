@@ -43,22 +43,25 @@ type RequestBodyConfigPrey struct {
 // }'
 
 // ConfigurePrey configures the prey for the hunter.
-func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
-	log.Println("call ConfigurePrey")
+func (h *Hunter) ConfigurePrey() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
-	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
-		return
+		log.Println("call ConfigurePrey")
+
+		// request
+		var hunterConfig RequestBodyConfigPrey
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
+
+		// process
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+		// response
+		response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 	}
-
-	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
-
-	// response
-	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 }
 
 // RequestBodyConfigHunter is an struct to configure the hunter in JSON format.
@@ -74,40 +77,31 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 		var body RequestBodyConfigHunter
 		err := json.NewDecoder(r.Body).Decode(&body)
 		if err != nil {
-			w.Header().Set("content-type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
+			response.Error(w, http.StatusBadRequest, "")
 			return
 		}
 		// process
+		h.ht.Configure(body.Speed, body.Position)
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{"message": "caçador configurado"})
 	}
+
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
 		duration, err := h.ht.Hunt(h.pr)
 		if err == nil {
-			json.NewEncoder(w).Encode(map[string]any{"message": "caça concluída", "duration": duration})
-			w.Header().Set("content-type", "application/json")
-			w.WriteHeader(http.StatusOK)
+			response.JSON(w, http.StatusOK, map[string]any{"message": "caça concluída", "duration": duration})
 		}
 		if err != nil {
 			if errors.Is(err, hunter.ErrCanNotHunt) {
-				json.NewEncoder(w).Encode(map[string]any{"message": "caça concluída", "duration": duration, "error": err.Error()})
-				w.Header().Set("content-type", "application/json")
-				w.WriteHeader(http.StatusOK)
+				response.JSON(w, http.StatusOK, map[string]any{"message": "caça concluída", "duration": duration, "error": "can not hunt the prey"})
 			} else {
-				w.Header().Set("content-type", "application/json")
-				w.WriteHeader(http.StatusInternalServerError)
+				response.Error(w, http.StatusInternalServerError, "internal server error")
 			}
-
 		}
 	}
 }
