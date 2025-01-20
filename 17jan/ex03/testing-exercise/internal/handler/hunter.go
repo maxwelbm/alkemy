@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -46,15 +47,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -67,23 +68,41 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	// request
+	var hunterConfig RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		log.Print("pouha222")
+		response.Error(w, http.StatusBadRequest, "Configuração incorreta do caçador, problemas com o corpo da requisição")
+		return
 	}
+	// process
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	// response
+	response.Text(w, http.StatusOK, "O cacador está configurado corretamente")
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	concluded := true
 
-		// process
+	// process
+	durationTime, err := h.ht.Hunt(h.pr)
+	if err != nil {
+		if errors.Is(err, hunter.ErrCanNotHunt) {
+			concluded = false
+		} else {
+			response.Error(w, http.StatusInternalServerError, "Ocorreu um erro ao cacar a presa: "+err.Error())
+			return
+		}
 
-		// response
 	}
+	// response
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message":  "caca concluida",
+		"success":  concluded,
+		"duration": durationTime,
+	})
 }
