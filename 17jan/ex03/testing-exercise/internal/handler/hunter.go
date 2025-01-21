@@ -8,7 +8,6 @@ import (
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
-	"testdoubles/platform/web/request"
 	"testdoubles/platform/web/response"
 )
 
@@ -48,15 +47,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig *RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.ht.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -71,31 +70,24 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
 	// request
-	var configHunter RequestBodyConfigHunter
-	if err := request.JSON(r, &configHunter); err != nil {
-		response.JSON(w, http.StatusBadRequest, "Corpo da requisicao inválido!")
+	var configHunter *RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&configHunter)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(h.pr.GetSpeed(), h.pr.GetPosition())
-
-	response.JSON(w, http.StatusOK, map[string]any{
-		"message": "O cacador foi configurado corretamente",
-	})
-	return
+	h.ht.Configure(configHunter.Speed, configHunter.Position)
 
 	// response
+	response.Text(w, http.StatusOK, "O caçador está configurado corretamente")
+	return
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
 	// request
-	var configHunter RequestBodyConfigHunter
-	if err := request.JSON(r, &configHunter); err != nil {
-		response.JSON(w, http.StatusBadRequest, "Corpo da requisicao inválido!")
-		return
-	}
 
 	// process
 	duration, err := h.ht.Hunt(h.pr)
@@ -104,17 +96,17 @@ func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, hunter.ErrCanNotHunt) {
 			response.JSON(w, http.StatusOK, map[string]any{
-				"message":  "A caca foi concluída com sucesso!",
+				"message":  "A caça foi concluída com sucesso",
 				"duration": duration,
 			})
 			return
 		}
-		response.JSON(w, http.StatusInternalServerError, err.Error())
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"message":  "A caca foi concluída com sucesso!",
+		"message":  "A caça foi concluída com sucesso",
 		"duration": duration,
 	})
 	return
