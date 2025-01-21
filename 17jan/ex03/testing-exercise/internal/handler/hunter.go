@@ -56,7 +56,7 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -76,6 +76,8 @@ func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	response.Text(w, http.StatusOK, "O caçador está configurado corretamente")
 }
 
 // Hunt hunts the prey.
