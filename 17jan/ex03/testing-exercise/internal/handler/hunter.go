@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -10,20 +11,15 @@ import (
 	"testdoubles/platform/web/response"
 )
 
-// NewHunter returns a new Hunter handler.
 func NewHunter(ht hunter.Hunter, pr prey.Prey) *Hunter {
 	return &Hunter{ht: ht, pr: pr}
 }
 
-// Hunter returns handlers to manage hunting.
 type Hunter struct {
-	// ht is the Hunter interface that this handler will use
 	ht hunter.Hunter
-	// pr is the Prey interface that the hunter will hunt
 	pr prey.Prey
 }
 
-// RequestBodyConfigPrey is an struct to configure the prey for the hunter in JSON format.
 type RequestBodyConfigPrey struct {
 	Speed    float64              `json:"speed"`
 	Position *positioner.Position `json:"position"`
@@ -45,7 +41,6 @@ type RequestBodyConfigPrey struct {
 func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
-	// request
 	var hunterConfig RequestBodyConfigPrey
 	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
 	if err != nil {
@@ -53,37 +48,43 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(hunterConfig.Speed, hunterConfig.Position)
 
-	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 }
 
-// RequestBodyConfigHunter is an struct to configure the hunter in JSON format.
 type RequestBodyConfigHunter struct {
 	Speed    float64              `json:"speed"`
 	Position *positioner.Position `json:"position"`
 }
 
-// ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		log.Println("call ConfigureHunter")
 
-		// process
+		var hunterConfig RequestBodyConfigHunter
+		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
 
-		// response
+		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+		response.Text(w, http.StatusOK, "O hunter está configurado corretamente")
 	}
 }
 
-// Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		duration, err := h.ht.Hunt(h.pr)
 
-		// process
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
 		// response
+		response.Text(w, http.StatusOK, "A presa foi caçada em "+fmt.Sprintf("%f", duration))
 	}
 }

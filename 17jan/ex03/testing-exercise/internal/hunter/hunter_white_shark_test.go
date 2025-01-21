@@ -71,7 +71,8 @@ func TestHunterWhiteShark_Hunt(t *testing.T) {
 		duration, err := impl.Hunt(pr)
 
 		// assert
-		expectedErr := hunter.ErrCanNotHunt; expectedErrMsg := "can not hunt the prey: shark can not catch the prey"
+		expectedErr := hunter.ErrCanNotHunt
+		expectedErrMsg := "can not hunt the prey: shark can not catch the prey"
 		expectedDuration := 0.0
 		expectedMockCallCanCatch := 1
 		require.ErrorIs(t, err, expectedErr)
@@ -106,7 +107,8 @@ func TestHunterWhiteShark_Hunt(t *testing.T) {
 		duration, err := impl.Hunt(pr)
 
 		// assert
-		expectedErr := hunter.ErrCanNotHunt; expErrMsg := "can not hunt the prey: shark can not catch the prey"
+		expectedErr := hunter.ErrCanNotHunt
+		expErrMsg := "can not hunt the prey: shark can not catch the prey"
 		expectedDuration := 0.0
 		expectedMockCallCanCatch := 1
 		require.ErrorIs(t, err, expectedErr)
@@ -156,5 +158,19 @@ func TestHunterWhiteShark_Configure(t *testing.T) {
 		// outputPosition := &positioner.Position{X: 1, Y: 2, Z: 3}
 		// require.Equal(t, outputSpeed, impl.speed)
 		// require.Equal(t, outputPosition, impl.position)
+	})
+}
+
+func TestCreateWhiteShark(t *testing.T) {
+	t.Run("create white shark with default parameters", func(t *testing.T) {
+		// arrange
+		sm := simulator.NewCatchSimulatorMock() // Criando um mock do simulador.
+
+		// act
+		impl := hunter.CreateWhiteShark(sm) // Criando o WhiteShark.
+
+		// assert
+		require.NotNil(t, impl)
+
 	})
 }
