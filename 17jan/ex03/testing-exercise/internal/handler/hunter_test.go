@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
@@ -51,4 +52,38 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	assert.Equal(t, "A presa está configurada corretamente", recorder.Body.String())
+}
+
+func Test_ConfigureHunterTestHunte_Ok(t *testing.T) {
+	ht := hunter.NewHunterMock()
+	hd := NewHunter(ht, nil)
+	hdFunc := hd.ConfigureHunter()
+
+	req := httptest.NewRequest("POST", "/hunter/configure-hunter", strings.NewReader(
+		`{"speed": 10.0, "position": {"X": 1.0, "Y": 2.0, "Z": 3.0}}`,
+	))
+	req.Header.Set("Content-Type", "application/json")
+
+	response := httptest.NewRecorder()
+
+	hdFunc(response, req)
+	println(response.Body.String())
+
+	assert.Equal(t, http.StatusOK, response.Code)
+}
+
+func Test_Hunt_Ok(t *testing.T) {
+
+	ht := hunter.NewHunterMock()
+
+	hd := NewHunter(ht, nil)
+	hdFunc := hd.Hunt()
+
+	req := httptest.NewRequest("POST", "/hunter/configure-hunter", nil)
+
+	response := httptest.NewRecorder()
+	hdFunc(response, req)
+
+	assert.Equal(t, http.StatusOK, response.Code)
+
 }
