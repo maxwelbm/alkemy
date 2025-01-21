@@ -50,7 +50,8 @@ func (a *ApplicationDefault) SetUp() (err error) {
 	ps := positioner.NewPositionerDefault()
 	// - catch simulator
 	sm := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: ps,
+		MaxTimeToCatch: 100,
+		Positioner:     ps,
 	})
 	// - hunter
 	ht := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
@@ -72,9 +73,9 @@ func (a *ApplicationDefault) SetUp() (err error) {
 		// POST /hunter/configure-prey
 		r.Post("/configure-prey", hd.ConfigurePrey)
 		// POST /hunter/configure-hunter
-		r.Post("/configure-hunter", hd.ConfigureHunter())
+		r.Post("/configure-hunter", hd.ConfigureHunter)
 		// POST /hunter/hunt
-		r.Post("/hunt", hd.Hunt())
+		r.Post("/hunt", hd.Hunt)
 	})
 
 	return
