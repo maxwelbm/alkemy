@@ -40,7 +40,6 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 
 	h.prey.Configure(reqBody.Speed, reqBody.Position)
 
-	// Em vez de usar json.NewEncoder, escrevemos a string diretamente
 	fmt.Fprint(w, "A presa está configurada corretamente")
 }
 
@@ -54,7 +53,6 @@ func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 
 		h.prey.Configure(reqBody.Speed, reqBody.Position)
 
-		// Em vez de usar json.NewEncoder, escrevemos a string diretamente
 		fmt.Fprint(w, "O caçador está configurado corretamente")
 	}
 }
