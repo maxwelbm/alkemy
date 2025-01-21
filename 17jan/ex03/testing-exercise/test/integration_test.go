@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"testdoubles/internal/application"
 	"testdoubles/internal/handler"
@@ -49,11 +50,11 @@ func TestIntegration_Full(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		var responseBody string
-		err = json.NewDecoder(resp.Body).Decode(&responseBody)
+		responseBody, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		assert.Equal(t, "A presa está configurada corretamente", responseBody)
+		assert.Equal(t, "A presa está configurada corretamente", string(responseBody))
 	})
+
 	t.Run("configurar caçador", func(t *testing.T) {
 		hunterConfig := handler.RequestBodyConfigHunter{
 			Speed: 10.0,
@@ -71,11 +72,9 @@ func TestIntegration_Full(t *testing.T) {
 		defer resp.Body.Close()
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-		var responseBody string
-		err = json.NewDecoder(resp.Body).Decode(&responseBody)
+		responseBody, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
-		assert.Equal(t, "O caçador está configurado corretamente", responseBody)
+		assert.Equal(t, "O caçador está configurado corretamente", string(responseBody))
 	})
 
 	t.Run("realizar caçada", func(t *testing.T) {
