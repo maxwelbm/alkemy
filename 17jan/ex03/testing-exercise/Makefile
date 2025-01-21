@@ -13,6 +13,11 @@ coverage:
 coverage-html: coverage
 	go tool cover -html="coverage.out"
 
+# This command will run integration tests
+.PHONY: integration-tests
+integration-tests:
+	go test -v ./test/integration_test.go
+
 # This command will display the coverage report in the terminal
 .PHONY: coverage-total
 coverage-total: coverage
