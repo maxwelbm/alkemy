@@ -1,10 +1,11 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"testdoubles/internal/handler"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
@@ -15,7 +16,7 @@ import (
 )
 
 func TestHunter_ConfigurePrey(t *testing.T) {
-	requestBody := RequestBodyConfigPrey{
+	requestBody := handler.RequestBodyConfigPrey{
 		Speed: 10.5,
 		Position: &positioner.Position{
 			X: 100,
@@ -45,7 +46,7 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 
 	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
 
-	h := NewHunter(ht, pr)
+	h := handler.NewHunter(ht, pr)
 
 	h.ConfigurePrey(recorder, req)
 

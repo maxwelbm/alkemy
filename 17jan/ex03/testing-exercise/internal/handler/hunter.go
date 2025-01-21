@@ -7,6 +7,7 @@ import (
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
+	"testdoubles/platform/web/request"
 	"testdoubles/platform/web/response"
 )
 
@@ -67,23 +68,45 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	// request
+	var configHunter RequestBodyConfigHunter
+	if err := request.JSON(r, &configHunter); err != nil {
+		response.JSON(w, http.StatusBadRequest, "Corpo da requisicao inválido!")
+		return
 	}
+
+	// process
+	h.ht.Configure(h.pr.GetSpeed(), h.pr.GetPosition())
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message": "O cacador foi configurado corretamente",
+	})
+	return
+
+	// response
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
-
-		// response
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	// request
+	var configHunter RequestBodyConfigHunter
+	if err := request.JSON(r, &configHunter); err != nil {
+		response.JSON(w, http.StatusBadRequest, "Corpo da requisicao inválido!")
+		return
 	}
+
+	// process
+	duration, err := h.ht.Hunt(h.pr)
+
+	// response
+	if err != nil {
+		response.JSON(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message":  "A caca foi concluída com sucesso!",
+		"duration": duration,
+	})
 }
