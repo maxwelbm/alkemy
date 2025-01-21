@@ -102,7 +102,10 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// process
 		duration, err := h.ht.Hunt(h.pr)
 		if err != nil {
-			if !errors.Is(err, hunter.ErrCanNotHunt) {
+			if errors.Is(err, hunter.ErrCanNotHunt) {
+				response.JSON(w, http.StatusOK, err.Error())
+				return
+			} else {
 				response.Error(w, http.StatusInternalServerError, "internal server error")
 				return
 			}

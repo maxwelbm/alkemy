@@ -8,7 +8,7 @@ import (
 
 var (
 	// ErrCanNotHunt is returned when the hunter can not hunt the prey
-	ErrCanNotHunt = errors.New("can not hunt the prey")
+	ErrCanNotHunt = errors.New("can not hunt the prey: shark can not catch the prey")
 )
 
 // Hunter is an interface that represents a hunter
