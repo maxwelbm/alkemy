@@ -48,7 +48,7 @@ func TestConfigurePrey(t *testing.T) {
 	
 	resp := new(bytes.Buffer)
 	if _, err = resp.ReadFrom(response.Body); err != nil {
-		t.Fatalf("Falha ao ler o body da requisição: %v", err)
+		t.Fatalf("Falha no método 'response.ReadFrom': %v", err)
 	}
 	
 	require.Equal(t, expectedPreyResp, resp.String())
@@ -68,7 +68,7 @@ func TestConfigureHunter(t *testing.T) {
 	
 	response := new(bytes.Buffer)
 	if _, err = response.ReadFrom(resp.Body); err != nil {
-		t.Fatalf("Falha ao ler o body da requisição: %v", err)
+		t.Fatalf("Falha no método 'response.ReadFrom': %v", err)
 	}
 	
 	require.Equal(t, expectedHunterResp, response.String())
