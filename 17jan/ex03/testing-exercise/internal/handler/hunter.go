@@ -46,15 +46,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var configPrey RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&configPrey)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON")
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(configPrey.Speed, configPrey.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -70,10 +70,21 @@ type RequestBodyConfigHunter struct {
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// request
+		var configHunter RequestBodyConfigHunter
+
+		err := json.NewDecoder(r.Body).Decode(&configHunter)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "requisição inválida")
+			return
+		}
 
 		// process
+		h.ht.Configure(configHunter.Speed, configHunter.Position)
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "o caçador está configurado corretamente",
+		})
 	}
 }
 
@@ -83,7 +94,18 @@ func (h *Hunter) Hunt() http.HandlerFunc {
 		// request
 
 		// process
+		huntDuration, err := h.ht.Hunt(h.pr)
+
+		if err != nil {
+			response.Error(w, http.StatusInternalServerError, "internal error")
+			return
+		}
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message":       "caça concluida",
+			"success":       true,
+			"hunt_duration": huntDuration,
+		})
 	}
 }
