@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -101,6 +102,13 @@ func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
 
 	// response
 	if err != nil {
+		if errors.Is(err, hunter.ErrCanNotHunt) {
+			response.JSON(w, http.StatusOK, map[string]any{
+				"message":  "A caca foi concluída com sucesso!",
+				"duration": duration,
+			})
+			return
+		}
 		response.JSON(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -109,4 +117,5 @@ func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
 		"message":  "A caca foi concluída com sucesso!",
 		"duration": duration,
 	})
+	return
 }
