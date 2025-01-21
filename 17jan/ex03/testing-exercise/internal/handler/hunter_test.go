@@ -57,7 +57,7 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 func Test_ConfigureHunterTestHunte_Ok(t *testing.T) {
 	ht := hunter.NewHunterMock()
 	hd := NewHunter(ht, nil)
-	hdFunc := hd.ConfigureHunterTestHunter()
+	hdFunc := hd.ConfigureHunter()
 
 	req := httptest.NewRequest("POST", "/hunter/configure-hunter", strings.NewReader(
 		`{"speed": 10.0, "position": {"X": 1.0, "Y": 2.0, "Z": 3.0}}`,
