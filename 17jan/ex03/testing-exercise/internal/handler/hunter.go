@@ -46,15 +46,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -67,23 +67,35 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	var hunterConfig RequestBodyConfigHunter
 
-		// process
-
-		// response
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "invalid hunter found")
+		return
 	}
+
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	response.Text(w, http.StatusOK, "O caçador está configurado corretamente")
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	canCatch := true
+	time, err := h.ht.Hunt(h.pr)
 
-		// process
-
-		// response
+	if err != nil {
+		canCatch = false
 	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message": "prey hunted",
+		"data": map[string]any{
+			"success":  canCatch,
+			"duration": time,
+		},
+	})
+
 }
