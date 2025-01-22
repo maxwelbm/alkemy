@@ -2,53 +2,154 @@ package handler
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testdoubles/internal/hunter"
-	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
-	"testdoubles/internal/simulator"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHunter_ConfigurePrey(t *testing.T) {
-	requestBody := RequestBodyConfigPrey{
-		Speed: 10.5,
-		Position: &positioner.Position{
-			X: 100,
-			Y: 200,
-		},
-	}
-	body, _ := json.Marshal(requestBody)
+	t.Run("Status Code 200 - ConfigurePrey", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
 
-	req, err := http.NewRequest(http.MethodGet, "/hunter/configure-prey", bytes.NewReader(body))
-	if err != nil {
-		t.Fatalf("The request could not be created: %v", err)
-	}
+		h := NewHunter(mockHunter, stubPrey)
 
-	recorder := httptest.NewRecorder()
+		body := `{"speed": 10, "position":{"X": 100, "Y": 200, "Z": 300}}`
 
-	ps := positioner.NewPositionerDefault()
+		req := httptest.NewRequest(http.MethodPost, "/hunter/configure-prey", bytes.NewBufferString(body))
 
-	sm := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: ps,
+		recorder := httptest.NewRecorder()
+
+		h.ConfigurePrey(recorder, req)
+
+		assert.Equal(t, 200, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "The prey is configured correctly")
 	})
 
-	ht := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
-		Speed:     3.0,
-		Position:  &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0},
-		Simulator: sm,
+	t.Run("Status Code 400 - ConfigurePrey", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
+
+		h := NewHunter(mockHunter, stubPrey)
+
+		body := `{"speed": "aaa", "position":{"X": 100, "Y": 200, "Z": 300}}`
+
+		req := httptest.NewRequest(http.MethodPost, "/hunter/configure-prey", bytes.NewBufferString(body))
+
+		recorder := httptest.NewRecorder()
+
+		h.ConfigurePrey(recorder, req)
+
+		assert.Equal(t, 400, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "Error decoding JSON: ")
 	})
-
-	pr := prey.NewTuna(0.4, &positioner.Position{X: 0.0, Y: 0.0, Z: 0.0})
-
-	h := NewHunter(ht, pr)
-
-	h.ConfigurePrey(recorder, req)
-
-	assert.Equal(t, http.StatusOK, recorder.Code)
-	assert.Equal(t, "The prey is configured correctly", recorder.Body.String())
 }
+
+func TestHunter_ConfigureHunter(t *testing.T) {
+	t.Run("Status Code 200 - ConfigureHunter", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
+
+		h := NewHunter(mockHunter, stubPrey)
+
+		body := `{"speed": 20, "position":{"X": 100, "Y": 200, "Z": 300}}`
+
+		req := httptest.NewRequest(http.MethodPost, "/hunter/configure-hunter", bytes.NewBufferString(body))
+
+		recorder := httptest.NewRecorder()
+
+		h.ConfigureHunter(recorder, req)
+
+		assert.Equal(t, 200, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "The shark is configured correctly")
+	})
+
+	t.Run("Status Code 400 - ConfigureHunter", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
+
+		h := NewHunter(mockHunter, stubPrey)
+
+		body := `{"speed": "aaa", "position":{"X": 100, "Y": 200, "Z": 300}}`
+
+		req := httptest.NewRequest(http.MethodPost, "/hunter/configure-hunter", bytes.NewBufferString(body))
+
+		recorder := httptest.NewRecorder()
+
+		h.ConfigureHunter(recorder, req)
+
+		assert.Equal(t, 400, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "Error decoding JSON: ")
+	})
+}
+
+func TestHunt(t *testing.T) {
+	t.Run("Status Code 200 - Prey Caught: true", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
+
+		mockHunter.HuntFunc = func(pr prey.Prey) (duration float64, err error) {
+			return 0, nil
+		}
+
+		h := NewHunter(mockHunter, stubPrey)
+
+		req := httptest.NewRequest(http.MethodPost, "/hunter/hunt", nil)
+
+		recorder := httptest.NewRecorder()
+
+		h.Hunt(recorder, req)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "hunt completed with success | prey caught: true | duration: ")
+	})
+
+	t.Run("Status Code 200 - Prey Caught: false", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
+
+		mockHunter.HuntFunc = func(pr prey.Prey) (duration float64, err error) {
+			return 0, hunter.ErrCanNotHunt
+		}
+
+		h := NewHunter(mockHunter, stubPrey)
+
+		req := httptest.NewRequest(http.MethodPost, "/hunter/hunt", nil)
+
+		recorder := httptest.NewRecorder()
+
+		h.Hunt(recorder, req)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "hunt completed with success | prey caught: false | duration: ")
+	})
+
+	t.Run("Status Code 500 - Another Error", func(t *testing.T) {
+		mockHunter := hunter.NewHunterMock()
+		stubPrey := prey.NewPreyStub()
+
+		mockHunter.HuntFunc = func(pr prey.Prey) (duration float64, err error) {
+			err = bytes.ErrTooLarge
+			return 0, err
+		}
+
+		h := NewHunter(mockHunter, stubPrey)
+
+		req := httptest.NewRequest(http.MethodPost, "/hunter/hunt", nil)
+
+		recorder := httptest.NewRecorder()
+
+		h.Hunt(recorder, req)
+
+		assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "Internal error: ")
+	})
+}
+
+// teste de integraçao
+// inicializar o server
+// ele precisa bater no servidor (tipo um curl) fazendo as requisiçoes
