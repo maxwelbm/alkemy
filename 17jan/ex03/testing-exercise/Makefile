@@ -8,6 +8,9 @@ tests:
 coverage:
 	go test -cover -coverprofile=coverage.out ./...
 
+.PHONY: integretion-tests
+integretion-tests:
+	go test -v -tags=integration ./test/...
 # This command will display the coverage report in an HTML file
 .PHONY: coverage-html
 coverage-html: coverage
