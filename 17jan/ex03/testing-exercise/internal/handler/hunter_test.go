@@ -149,7 +149,3 @@ func TestHunt(t *testing.T) {
 		assert.Contains(t, recorder.Body.String(), "Internal error: ")
 	})
 }
-
-// teste de integraçao
-// inicializar o server
-// ele precisa bater no servidor (tipo um curl) fazendo as requisiçoes

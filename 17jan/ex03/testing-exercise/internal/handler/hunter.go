@@ -105,6 +105,5 @@ func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
 		response.Text(w, http.StatusOK, msg)
 	} else {
 		response.Error(w, http.StatusInternalServerError, "Internal error: "+err.Error())
-
 	}
 }
