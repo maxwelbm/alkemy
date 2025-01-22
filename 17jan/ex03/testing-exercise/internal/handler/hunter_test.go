@@ -26,7 +26,7 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 
 	req, err := http.NewRequest(http.MethodGet, "/hunter/configure-prey", bytes.NewReader(body))
 	if err != nil {
-		t.Fatalf("Não foi possível criar a requisição: %v", err)
+		t.Fatalf("The request could not be created: %v", err)
 	}
 
 	recorder := httptest.NewRecorder()
@@ -50,5 +50,5 @@ func TestHunter_ConfigurePrey(t *testing.T) {
 	h.ConfigurePrey(recorder, req)
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
-	assert.Equal(t, "A presa está configurada corretamente", recorder.Body.String())
+	assert.Equal(t, "The prey is configured correctly", recorder.Body.String())
 }
