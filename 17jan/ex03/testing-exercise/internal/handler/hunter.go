@@ -70,45 +70,41 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 // if an error occurs when decoding the body, returns status code 400
 // if no error occurs, returns status code 200
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("call ConfigureHunter")
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	log.Println("call ConfigureHunter")
 
-		// request
-		var hunterConfig RequestBodyConfigHunter
-		err := json.NewDecoder(r.Body).Decode(&hunterConfig)
-		if err != nil {
-			response.Error(w, http.StatusBadRequest, "Error decoding JSON: "+err.Error())
-			return
-		}
-
-		// process
-		h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
-
-		// response
-		response.Text(w, http.StatusOK, "The shark is configured correctly")
+	// request
+	var hunterConfig RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Error decoding JSON: "+err.Error())
+		return
 	}
+
+	// process
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	// response
+	response.Text(w, http.StatusOK, "The shark is configured correctly")
 }
 
 // Hunt hunts the prey.
 // if no error occurs, returns status code 200
 // if ErrCanNotHunt occurs, returns status code 200
 // if another error occurs, returns status code 500
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Println("call Hunt")
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	log.Println("call Hunt")
 
-		duration, err := h.ht.Hunt(h.pr)
+	duration, err := h.ht.Hunt(h.pr)
 
-		if err == nil {
-			msg := fmt.Sprintf("hunt completed with success | prey caught: true | duration: %.2f", duration)
-			response.Text(w, http.StatusOK, msg)
-		} else if err == hunter.ErrCanNotHunt {
-			msg := fmt.Sprintf("hunt completed with success | prey caught: false | duration: %.2f", duration)
-			response.Text(w, http.StatusOK, msg)
-		} else {
-			response.Error(w, http.StatusInternalServerError, "Internal error: "+err.Error())
+	if err == nil {
+		msg := fmt.Sprintf("hunt completed with success | prey caught: true | duration: %.2f", duration)
+		response.Text(w, http.StatusOK, msg)
+	} else if err == hunter.ErrCanNotHunt {
+		msg := fmt.Sprintf("hunt completed with success | prey caught: false | duration: %.2f", duration)
+		response.Text(w, http.StatusOK, msg)
+	} else {
+		response.Error(w, http.StatusInternalServerError, "Internal error: "+err.Error())
 
-		}
 	}
 }
