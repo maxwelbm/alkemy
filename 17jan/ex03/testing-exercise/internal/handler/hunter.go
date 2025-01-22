@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -46,18 +47,18 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
-		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+		response.Error(w, http.StatusBadRequest, "Error decoding JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
-	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
+	response.Text(w, http.StatusOK, "The prey is configured correctly")
 }
 
 // RequestBodyConfigHunter is an struct to configure the hunter in JSON format.
@@ -67,23 +68,42 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+// if an error occurs when decoding the body, returns status code 400
+// if no error occurs, returns status code 200
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	log.Println("call ConfigureHunter")
 
-		// process
-
-		// response
+	// request
+	var hunterConfig RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Error decoding JSON: "+err.Error())
+		return
 	}
+
+	// process
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	// response
+	response.Text(w, http.StatusOK, "The shark is configured correctly")
 }
 
 // Hunt hunts the prey.
-func (h *Hunter) Hunt() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+// if no error occurs, returns status code 200
+// if ErrCanNotHunt occurs, returns status code 200
+// if another error occurs, returns status code 500
+func (h *Hunter) Hunt(w http.ResponseWriter, r *http.Request) {
+	log.Println("call Hunt")
 
-		// process
+	duration, err := h.ht.Hunt(h.pr)
 
-		// response
+	if err == nil {
+		msg := fmt.Sprintf("hunt completed with success | prey caught: true | duration: %.2f", duration)
+		response.Text(w, http.StatusOK, msg)
+	} else if err == hunter.ErrCanNotHunt {
+		msg := fmt.Sprintf("hunt completed with success | prey caught: false | duration: %.2f", duration)
+		response.Text(w, http.StatusOK, msg)
+	} else {
+		response.Error(w, http.StatusInternalServerError, "Internal error: "+err.Error())
 	}
 }
