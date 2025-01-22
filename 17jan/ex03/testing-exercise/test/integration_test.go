@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"testdoubles/internal/handler"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestHunterHandler(t *testing.T) {
 		mockHunter := hunter.NewHunterMock()
 		stubPrey := prey.NewPreyStub()
 
-		h := NewHunter(mockHunter, stubPrey)
+		h := handler.NewHunter(mockHunter, stubPrey)
 
 		body := `{"speed": 4.0, "position": {"X": 0.1, "Y": 0.4, "Z": 3.1}}`
 		req := httptest.NewRequest(http.MethodPost, "/hunter/configure-prey", bytes.NewBufferString(body))
@@ -38,7 +39,7 @@ func TestHunterHandler(t *testing.T) {
 	t.Run("ConfigureHunter - bad request (400)", func(t *testing.T) {
 		mockHunter := hunter.NewHunterMock()
 		stubPrey := prey.NewPreyStub()
-		hh := NewHunter(mockHunter, stubPrey)
+		hh := handler.NewHunter(mockHunter, stubPrey)
 
 		body := `{"speed": "not a float", "position": {}}`
 		req := httptest.NewRequest(http.MethodPost, "/hunter/configure-hunter", bytes.NewBufferString(body))
@@ -58,7 +59,7 @@ func TestHunterHandler(t *testing.T) {
 		mockHunter.HuntFunc = func(pr prey.Prey) (float64, error) {
 			return 12.5, nil
 		}
-		hh := NewHunter(mockHunter, prey.NewPreyStub())
+		hh := handler.NewHunter(mockHunter, prey.NewPreyStub())
 
 		req := httptest.NewRequest(http.MethodPost, "/hunter/hunt", nil)
 		rr := httptest.NewRecorder()
@@ -80,7 +81,7 @@ func TestHunterHandler(t *testing.T) {
 		mockHunter.HuntFunc = func(pr prey.Prey) (float64, error) {
 			return 30.0, hunter.ErrCanNotHunt
 		}
-		hh := NewHunter(mockHunter, prey.NewPreyStub())
+		hh := handler.NewHunter(mockHunter, prey.NewPreyStub())
 
 		req := httptest.NewRequest(http.MethodPost, "/hunter/hunt", nil)
 		rr := httptest.NewRecorder()
@@ -102,7 +103,7 @@ func TestHunterHandler(t *testing.T) {
 		mockHunter.HuntFunc = func(pr prey.Prey) (float64, error) {
 			return 0, errors.New("erro aleatório de estagiário")
 		}
-		hh := NewHunter(mockHunter, prey.NewPreyStub())
+		hh := handler.NewHunter(mockHunter, prey.NewPreyStub())
 
 		req := httptest.NewRequest(http.MethodPost, "/hunter/hunt", nil)
 		rr := httptest.NewRecorder()

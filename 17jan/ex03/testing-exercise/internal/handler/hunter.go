@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -15,12 +17,10 @@ func NewHunter(ht hunter.Hunter, pr prey.Prey) *Hunter {
 	return &Hunter{ht: ht, pr: pr}
 }
 
-// Hunter returns handlers to manage hunting.
+// Hunter is the HTTP handler that manages "hunting" endpoints.
 type Hunter struct {
-	// ht is the Hunter interface that this handler will use
-	ht hunter.Hunter
-	// pr is the Prey interface that the hunter will hunt
-	pr prey.Prey
+	ht hunter.Hunter // a "real" or "mock" that implements Hunter
+	pr prey.Prey     // a "real" or "stub" that implements Prey
 }
 
 // RequestBodyConfigPrey is an struct to configure the prey for the hunter in JSON format.
@@ -29,34 +29,18 @@ type RequestBodyConfigPrey struct {
 	Position *positioner.Position `json:"position"`
 }
 
-// Example
-// curl -X POST http://localhost:8080/hunter/configure-prey \
-// -H "Content-Type: application/json" \
-// -d '{
-//   "speed": 4.0,
-//   "position": {
-//     "X": 0.1,
-//     "Y": 0.4,
-//     "Z": 3.1
-//   }
-// }'
-
 // ConfigurePrey configures the prey for the hunter.
 func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
-	// request
 	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&hunterConfig); err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
-	// process
 	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
 
-	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
 }
 
@@ -67,23 +51,42 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
+// Se falhar o parse do JSON, retornamos 400.
+// Caso contrário, chama h.ht.Configure(...) e retorna 200.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		log.Println("call ConfigureHunter")
 
-		// process
+		var cfg RequestBodyConfigHunter
+		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+			response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+			return
+		}
 
-		// response
+		h.ht.Configure(cfg.Speed, cfg.Position)
+		response.Text(w, http.StatusOK, "O tubarão está configurado corretamente")
 	}
 }
 
 // Hunt hunts the prey.
+// - Se nenhum erro => capturou => 200 com "caça concluída, capturada:true, tempo: X"
+// - Se err == hunter.ErrCanNotHunt => 200 com "caçada concluída, capturada:false, tempo: X"
+// - Se outro erro => 500
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		log.Println("call Hunt")
 
-		// process
-
-		// response
+		duration, err := h.ht.Hunt(h.pr)
+		switch {
+		case err == nil:
+			msg := fmt.Sprintf("caça concluída, capturada: true, tempo: %.2f", duration)
+			response.Text(w, http.StatusOK, msg)
+		case errors.Is(err, hunter.ErrCanNotHunt):
+			msg := fmt.Sprintf("caçada concluída, capturada: false, tempo: %.2f", duration)
+			response.Text(w, http.StatusOK, msg)
+		default:
+			// Se houver um erro "diferente de can not hunt", retorna 500
+			response.Error(w, http.StatusInternalServerError, "Erro interno na caçada: "+err.Error())
+		}
 	}
 }
