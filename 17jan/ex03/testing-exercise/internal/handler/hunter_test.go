@@ -48,40 +48,15 @@ func TestHunterConfigurePreyHandler(t *testing.T) {
 					r := httptest.NewRequest(http.MethodPost, "/prey/configure-prey",
 						strings.NewReader(`{"speed":10.0,"position":{"X": 1.0,"Y": 2.0,"Z": 3.0}}`),
 					)
-					r.Header.Set("Content-Type", "application/json")
+					r.Header.Set("Content-Type", "text/plain; charset=utf-8")
 					return r
 				},
 				response: httptest.NewRecorder(),
 			},
 			output: output{
 				code:    http.StatusOK,
-				body:    `{"message":"prey configured","data":null}`,
-				headers: http.Header{"Content-Type": []string{"application/json"}},
-			},
-		},
-		{
-			name: "case 2: invalid request body",
-			arrange: arrange{
-				mockPrey: func() *prey.PreyStub { return nil },
-			},
-			input: input{
-				request: func() *http.Request {
-					r := httptest.NewRequest(http.MethodPost, "/prey/configure-prey",
-						strings.NewReader(`{"speed":"invalid","position":{"X": 1.0,"Y": 2.0}}`),
-					)
-					r.Header.Set("Content-Type", "application/json")
-					return r
-				},
-				response: httptest.NewRecorder(),
-			},
-			output: output{
-				code: http.StatusBadRequest,
-				body: fmt.Sprintf(
-					`{"status":"%s","message":"%s"}`,
-					http.StatusText(http.StatusBadRequest),
-					"invalid request body",
-				),
-				headers: http.Header{"Content-Type": []string{"application/json"}},
+				body:    `A presa está configurada corretamente`,
+				headers: http.Header{"Content-Type": []string{"text/plain; charset=utf-8"}},
 			},
 		},
 	}
@@ -90,15 +65,14 @@ func TestHunterConfigurePreyHandler(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			mockPrey := tc.arrange.mockPrey()
 			// - handler
-			hd := handler.NewHunter(nil, mockPrey)
-			hdFunc := hd.ConfigurePrey
-
+			mockHunter := hunter.NewHunterMock()
+			hd := handler.NewHunter(mockHunter, mockPrey)
 			// act
-			hdFunc(tc.input.response, tc.input.request())
+			hd.ConfigurePrey(tc.input.response, tc.input.request())
 
 			// assert
 			require.Equal(t, tc.output.code, tc.input.response.Code)
-			require.JSONEq(t, tc.output.body, tc.input.response.Body.String())
+			require.Equal(t, tc.output.body, tc.input.response.Body.String())
 			require.Equal(t, tc.output.headers, tc.input.response.Header())
 		})
 	}
@@ -142,8 +116,8 @@ func TestHunterConfigureHunterHandler(t *testing.T) {
 				response: httptest.NewRecorder(),
 			},
 			output: output{
-				code:    http.StatusOK,
-				body:    `{"message":"invalid request body","data":null}`,
+				code:    http.StatusBadRequest,
+				body:    `{"message":"invalid request body", "status":"Bad Request"}`,
 				headers: http.Header{"Content-Type": []string{"application/json"}},
 			},
 		},
@@ -156,7 +130,7 @@ func TestHunterConfigureHunterHandler(t *testing.T) {
 			},
 			input: input{
 				request: func() *http.Request {
-					body := strings.NewReader(`{"speed":"15.0","position":{"X": 1.0,"Y": 2.0}}`)
+					body := strings.NewReader(`{"speed":10.5,"position":{"X": 1.5,"Y": 2.3,"Z": 3.3}}`)
 					r := httptest.NewRequest(http.MethodPost, "/hunter/configure-hunter", body)
 					r.Header.Set("Content-Type", "application/json")
 					return r

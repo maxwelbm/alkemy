@@ -56,7 +56,7 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.pr.Configure(hunterConfig.Speed, hunterConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
