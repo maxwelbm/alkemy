@@ -2,11 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
 	"testdoubles/internal/positioner"
 	"testdoubles/internal/prey"
+	"testdoubles/platform/web/request"
 	"testdoubles/platform/web/response"
 )
 
@@ -69,21 +71,40 @@ type RequestBodyConfigHunter struct {
 // ConfigureHunter configures the hunter.
 func (h *Hunter) ConfigureHunter() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		var body RequestBodyConfigHunter
+		err := request.JSON(r, &body)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "invalid request body")
+			return
+		}
 
-		// process
+		h.ht.Configure(body.Speed, body.Position)
 
-		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "hunter configured",
+			"data":    nil,
+		})
 	}
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
-
-		// process
+		_, err := h.ht.Hunt(h.pr)
+		if err != nil {
+			switch {
+			case errors.Is(err, hunter.ErrCanNotHunt):
+				response.Error(w, http.StatusInternalServerError, "can not hunt the prey")
+			default:
+				response.Error(w, http.StatusInternalServerError, "internal server error")
+			}
+			return
+		}
 
 		// response
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "prey hunted",
+			"data":    nil,
+		})
 	}
 }
