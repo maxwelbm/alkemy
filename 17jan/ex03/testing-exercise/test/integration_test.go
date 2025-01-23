@@ -2,116 +2,101 @@ package test
 
 import (
 	"bytes"
-	"encoding/json"
+	"io"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
-	"testdoubles/internal/handler"
-	"testdoubles/internal/hunter"
-	"testdoubles/internal/positioner"
-	"testdoubles/internal/prey"
-	"testdoubles/internal/simulator"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestHunter_ConfigurePrey(t *testing.T) {
-	preyConfig := handler.RequestBodyConfigPrey{
-		Speed: 10.5,
-		Position: &positioner.Position{
-			X: 100,
-			Y: 200,
-		},
+func TestIntegration_ConfigurePrey(t *testing.T) {
+	payload := `{"speed":10, "position":{"X":200, "Y":200, "Z":200}}`
+
+	resp, err := http.Post("http://localhost:8080/hunter/configure-prey", "application/json", bytes.NewBufferString((payload)))
+	if err != nil {
+		t.Fatalf("Erro ao fazer a request %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Erro ao ler a response %v", err)
 	}
 
-	var buffer bytes.Buffer
-	encoder := json.NewEncoder(&buffer)
-	if err := encoder.Encode(preyConfig); err != nil {
-		t.Fatalf("Erro ao encodar JSON para configuração da presa: %v", err)
-	}
-
-	testRecorder := httptest.NewRecorder()
-
-	pos := positioner.NewPositionerDefault()
-	catchSim := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: pos,
-	})
-
-	shark := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
-		Speed:     3.0,
-		Position:  &positioner.Position{X: 0, Y: 0, Z: 0},
-		Simulator: catchSim,
-	})
-	tuna := prey.NewTuna(0.4, &positioner.Position{X: 0, Y: 0, Z: 0})
-
-	hunterHandler := handler.NewHunter(shark, tuna)
-
-	testServer := httptest.NewServer(http.HandlerFunc(hunterHandler.ConfigurePrey))
-	defer testServer.Close()
-
-	req, errReq := http.NewRequest(
-		http.MethodPost,
-		testServer.URL+"/hunter/configure-prey",
-		bytes.NewReader(buffer.Bytes()),
-	)
-	if errReq != nil {
-		t.Fatalf("Falha ao criar request de teste para configurar a presa: %v", errReq)
-	}
-
-	hunterHandler.ConfigurePrey(testRecorder, req)
-
-	require.Equal(t, http.StatusOK, testRecorder.Code)
-	require.Equal(t, "A presa está configurada corretamente", testRecorder.Body.String())
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, string(body), "A presa está configurada corretamente")
 }
 
-func TestHunter_ConfigureHunter(t *testing.T) {
-	hunterConfig := handler.RequestBodyConfigHunter{
-		Speed: 10.5,
-		Position: &positioner.Position{
-			X: 100,
-			Y: 200,
-		},
+func TestIntegration_ConfigurePrey_InvalidPayload(t *testing.T) {
+	payload := `{"speed": "aaaa", "position":{"X":200, "Y":200, "Z":200}}`
+
+	resp, err := http.Post("http://localhost:8080/hunter/configure-prey", "application/json", bytes.NewBufferString(payload))
+	if err != nil {
+		t.Fatalf("Erro ao fazer a request %v", err)
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Erro ao ler a response %v", err)
 	}
 
-	var buffer bytes.Buffer
-	if err := json.NewEncoder(&buffer).Encode(hunterConfig); err != nil {
-		t.Fatalf("Erro ao encodar JSON para configuração do hunter: %v", err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	assert.Contains(t, string(body), "Erro ao decodificar JSON:")
+}
+
+func TestIntegration_ConfigureHunter(t *testing.T) {
+	payload := `{"speed":20.1, "position":{"X":100, "Y":150, "Z":300}}`
+
+	resp, err := http.Post("http://localhost:8080/hunter/configure-hunter", "application/json", bytes.NewBufferString(payload))
+	if err != nil {
+		t.Fatalf("Erro ao fazer a request %v", err)
 	}
 
-	req, errReq := http.NewRequest(http.MethodPost, "/hunter/configure-hunter", &buffer)
-	if errReq != nil {
-		t.Fatalf("Não foi possível criar a requisição inicial: %v", errReq)
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Erro ao ler a response %v", err)
 	}
 
-	rec := httptest.NewRecorder()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, string(body), "O tubarão está configurado corretamente")
+}
 
-	pos := positioner.NewPositionerDefault()
-	sim := simulator.NewCatchSimulatorDefault(&simulator.ConfigCatchSimulatorDefault{
-		Positioner: pos,
-	})
+func TestIntegration_ConfigureHunter_InvalidPayload(t *testing.T) {
+	payload := `{"speed":"aaaaa", "position":{"X":100, "Y":150, "Z":300}}`
 
-	whiteShark := hunter.NewWhiteShark(hunter.ConfigWhiteShark{
-		Speed:     3.0,
-		Position:  &positioner.Position{X: 0, Y: 0, Z: 0},
-		Simulator: sim,
-	})
-	tuna := prey.NewTuna(0.4, &positioner.Position{X: 0, Y: 0, Z: 0})
-
-	hunterHandler := handler.NewHunter(whiteShark, tuna)
-
-	testServer := httptest.NewServer(http.HandlerFunc(hunterHandler.ConfigureHunter()))
-	defer testServer.Close()
-
-	req, errReq = http.NewRequest(http.MethodPost, testServer.URL+"/hunter/configure-prey", bytes.NewReader(buffer.Bytes()))
-	if errReq != nil {
-		t.Fatalf("Não foi possível criar a requisição final: %v", errReq)
+	resp, err := http.Post("http://localhost:8080/hunter/configure-hunter", "application/json", bytes.NewBufferString(payload))
+	if err != nil {
+		t.Fatalf("Erro ao fazer a request %v", err)
 	}
 
-	configFunction := hunterHandler.ConfigureHunter()
+	defer resp.Body.Close()
 
-	configFunction(rec, req)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Erro ao ler a response %v", err)
+	}
 
-	require.Equal(t, http.StatusOK, rec.Code)
-	require.Equal(t, "O tubarão está configurado corretamente", rec.Body.String())
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	assert.Contains(t, string(body), "Erro ao decodificar JSON:")
+}
+
+func TestIntegration_Hunt(t *testing.T) {
+	payload := ""
+
+	resp, err := http.Post("http://localhost:8080/hunter/hunt", "text/plain", bytes.NewBufferString(payload))
+	if err != nil {
+		t.Fatalf("Erro ao fazer a request %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Erro ao ler a response %v", err)
+	}
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Contains(t, string(body), "caçada concluída, capturada:")
 }
