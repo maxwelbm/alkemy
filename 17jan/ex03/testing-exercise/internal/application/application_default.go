@@ -72,7 +72,7 @@ func (a *ApplicationDefault) SetUp() (err error) {
 		// POST /hunter/configure-prey
 		r.Post("/configure-prey", hd.ConfigurePrey)
 		// POST /hunter/configure-hunter
-		r.Post("/configure-hunter", hd.ConfigureHunter())
+		r.Post("/configure-hunter", hd.ConfigureHunter)
 		// POST /hunter/hunt
 		r.Post("/hunt", hd.Hunt())
 	})

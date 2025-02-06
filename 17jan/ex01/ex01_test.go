@@ -21,7 +21,7 @@ func TestHelloHandler(t *testing.T) {
 	//      endpoint, o que torna o teste mais rápido e fácil.
 	// - O teste é diretamente sobre o comportamento da função handler,
 	//      isolando outros fatores como rede ou servidores externos.
-	// - omo o ResponseRecorder armazena a resposta em memória, é simples
+	// - Como o ResponseRecorder armazena a resposta em memória, é simples
 	//      verificar o status code, headers e o corpo da resposta.
 	recorder := httptest.NewRecorder()
 

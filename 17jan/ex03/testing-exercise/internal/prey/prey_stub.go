@@ -5,9 +5,9 @@ import "testdoubles/internal/positioner"
 // NewPreyStub creates a new PreyStub
 func NewPreyStub() (prey *PreyStub) {
 	prey = &PreyStub{
-		GetSpeedFunc: func() (speed float64) {return},
-		GetPositionFunc: func() (position *positioner.Position) {return},	
-		ConfigureFunc: func(speed float64, position *positioner.Position) {},
+		GetSpeedFunc:    func() (speed float64) { return },
+		GetPositionFunc: func() (position *positioner.Position) { return },
+		ConfigureFunc:   func(speed float64, position *positioner.Position) {},
 	}
 	return
 }

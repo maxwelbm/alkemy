@@ -13,6 +13,11 @@ func TestFactorial(t *testing.T) {
 		want int
 	}{
 		{
+			name: "fatorial de -1 deve ser 0",
+			args: -1,
+			want: 0,
+		},
+		{
 			name: "fatorial de 0 deve ser 1",
 			args: 0,
 			want: 1,
@@ -38,6 +43,7 @@ func TestFactorial(t *testing.T) {
 			want: 24,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := Factorial(tt.args)

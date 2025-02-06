@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"testdoubles/internal/hunter"
@@ -46,15 +47,15 @@ func (h *Hunter) ConfigurePrey(w http.ResponseWriter, r *http.Request) {
 	log.Println("call ConfigurePrey")
 
 	// request
-	var hunterConfig RequestBodyConfigPrey
-	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	var preyConfig RequestBodyConfigPrey
+	err := json.NewDecoder(r.Body).Decode(&preyConfig)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
 		return
 	}
 
 	// process
-	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+	h.ht.Configure(preyConfig.Speed, preyConfig.Position)
 
 	// response
 	response.Text(w, http.StatusOK, "A presa está configurada corretamente")
@@ -67,23 +68,41 @@ type RequestBodyConfigHunter struct {
 }
 
 // ConfigureHunter configures the hunter.
-func (h *Hunter) ConfigureHunter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+func (h *Hunter) ConfigureHunter(w http.ResponseWriter, r *http.Request) {
+	log.Println("call ConfigureHunter")
 
-		// process
-
-		// response
+	// request
+	var hunterConfig RequestBodyConfigHunter
+	err := json.NewDecoder(r.Body).Decode(&hunterConfig)
+	if err != nil {
+		response.Error(w, http.StatusBadRequest, "Erro ao decodificar JSON: "+err.Error())
+		return
 	}
+
+	// process
+	h.ht.Configure(hunterConfig.Speed, hunterConfig.Position)
+
+	// response
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"message": "O caçador está configurado corretamente",
+	})
 }
 
 // Hunt hunts the prey.
 func (h *Hunter) Hunt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// request
+		duration, err := h.ht.Hunt(h.pr)
 
-		// process
+		if err == nil {
+			response.JSON(w, http.StatusOK, map[string]any{"message": "caça concluída", "duration": duration})
+		}
 
-		// response
+		if err != nil {
+			if errors.Is(err, hunter.ErrCanNotHunt) {
+				response.JSON(w, http.StatusOK, map[string]any{"message": "caça concluída", "duration": duration, "error": "can not hunt the prey"})
+			} else {
+				response.Error(w, http.StatusInternalServerError, "internal server error")
+			}
+		}
 	}
 }
