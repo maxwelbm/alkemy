@@ -76,7 +76,7 @@ func TestHunter_ConfigureHunter(t *testing.T) {
 		res := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/configure-hunter", strings.NewReader(`{"speed": "0.0", "position": {"X": 0.0, "Y": 0.0, "Z": 0.0}}`))
 
-		hd.ConfigureHunter().ServeHTTP(res, req)
+		hd.ConfigureHunter(res, req)
 
 		require.Equal(t, http.StatusBadRequest, res.Code)
 		require.Equal(t, "application/json", res.Header().Get("content-type"))
@@ -97,10 +97,10 @@ func TestHunter_ConfigureHunter(t *testing.T) {
 		hd := handler.NewHunter(hunter.NewHunterMock(), prey.NewPreyStub())
 		res := httptest.NewRecorder()
 
-		hd.ConfigureHunter().ServeHTTP(res, req)
+		hd.ConfigureHunter(res, req)
 
 		assert.Equal(t, http.StatusOK, res.Code)
-		assert.Equal(t, "O caçador está configurado corretamente", res.Body.String())
+		assert.Equal(t, `{"message":"O caçador está configurado corretamente"}`, res.Body.String())
 	})
 }
 
